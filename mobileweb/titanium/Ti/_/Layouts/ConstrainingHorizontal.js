@@ -25,7 +25,8 @@ define(["Ti/_/Layouts/Base", "Ti/_/declare", "Ti/UI", "Ti/_/lang", "Ti/_/style"]
 				verifyChild = this.verifyChild,
 				updateBorder = this.updateBorder,
 				measureNode = this._measureNode,
-				style;
+				style,
+				flexCount = 0;
 				
 			// Calculate size for the non-FILL children
 			for(i = 0; i < len; i++) {
@@ -70,6 +71,10 @@ define(["Ti/_/Layouts/Base", "Ti/_/declare", "Ti/UI", "Ti/_/lang", "Ti/_/style"]
 							child._measuredHeight = measuredHeight;
 						} else {
 							fillCount++;
+							//Modified By : yangxk@chanjet.com
+							if (child._flex) {
+								flexCount += child._flex;
+							}
 						}
 					}
 				}
@@ -77,10 +82,16 @@ define(["Ti/_/Layouts/Base", "Ti/_/declare", "Ti/UI", "Ti/_/lang", "Ti/_/style"]
 			
 			// Calculate size for the FILL children
 			remainingSpace = width - runningWidth;
-			runningWidth = Math.floor(remainingSpace / fillCount); // Temporary repurposing of runningHeight
+			runningWidth = Math.floor(remainingSpace / fillCount); // Temporary repurposing of runningWidth
 			for(i = 0; i < len; i++) {
 				
 				child = element._children[i];
+				//Desc :  recalculate the width , using node flex prop.
+				//Modified by : yangxk@chanjet.com
+				if (flexCount) {
+					runningWidth = Math.floor(remainingSpace / flexCount) * child._flex;
+				}
+				
 				if (child._markedForLayout) {
 									
 					layoutCoefficients = child._layoutCoefficients;

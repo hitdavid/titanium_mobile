@@ -484,6 +484,10 @@ define(
 
 		_borderBottomWidth: 0,
 
+		//Desc : layout flex prop
+		//Modified by : yangxk@chanjet.com 
+		_flex: 0,
+
 		_getBorderFromCSS: function() {
 			setTimeout(lang.hitch(this, function () {
 				var computedStyle = global.getComputedStyle(this.domNode),
@@ -806,7 +810,21 @@ define(
 
 			width: postLayoutProp,
 
-			zIndex: postLayoutProp
+			zIndex: postLayoutProp,
+			
+			//Desc : layout flex prop
+			//Modified by : yangxk@chanjet.com
+			flex: {
+				set : function(value) {
+					if (is(value,'Number')) {
+						this._flex = value;
+					}
+					return value;
+				},
+				get : function() {
+					return this._flex;
+				}
+			}
 		}
 
 	});

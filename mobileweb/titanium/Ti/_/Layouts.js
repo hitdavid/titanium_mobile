@@ -5,7 +5,7 @@ define(
 	return {
 		Composite: Composite,
 		Horizontal: Horizontal,
-		Vertical: Vertical,
+		Vertical: ConstrainingVertical,
 		
 		// Mobile web specific layouts, used for internal controls
 		ConstrainingHorizontal: ConstrainingHorizontal,
