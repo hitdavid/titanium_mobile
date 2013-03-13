@@ -15,6 +15,7 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
+import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiUIView;
 
 import android.text.Html;
@@ -23,6 +24,7 @@ import android.text.TextUtils.TruncateAt;
 import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
 
 public class TiUILabel extends TiUIView
@@ -44,6 +46,15 @@ public class TiUILabel extends TiUIView
 					proxy.fireEvent(TiC.EVENT_POST_LAYOUT, null, false);
 				}
 			}
+			
+			//david
+			//2013-3-8
+			@Override
+			protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
+			{
+				super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+				Log.d(TAG, "==== Label on measure!", Log.DEBUG_MODE);
+			}
 		};
 		tv.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
 		tv.setPadding(0, 0, 0, 0);
@@ -56,8 +67,9 @@ public class TiUILabel extends TiUIView
 	@Override
 	public void processProperties(KrollDict d)
 	{
+		Log.d(TAG, "processProperties ==> TiUILabel", Log.DEBUG_MODE);
 		super.processProperties(d);
-
+		Log.d(TAG, "processProperties ==> TiUILabel, after call super", Log.DEBUG_MODE);
 		TextView tv = (TextView) getNativeView();
 		
 		// Clear any text style left over here if view is recycled
@@ -96,7 +108,10 @@ public class TiUILabel extends TiUIView
 		if (d.containsKey(TiC.PROPERTY_WORD_WRAP)) {
 			tv.setSingleLine(!TiConvert.toBoolean(d, TiC.PROPERTY_WORD_WRAP));
 		}
-		// This needs to be the last operation.
+		if (d.containsKey(TiC.PROPERTY_FLEX)) {
+			
+		}
+ 		// This needs to be the last operation.
 		TiUIHelper.linkifyIfEnabled(tv, d.get(TiC.PROPERTY_AUTO_LINK));
 		tv.invalidate();
 	}

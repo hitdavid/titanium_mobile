@@ -12,7 +12,9 @@ import org.appcelerator.kroll.common.AsyncResult;
 import org.appcelerator.kroll.common.TiMessenger;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 
 /**
  * This class maintains a reference between the JavaScript and Java objects.
@@ -31,7 +33,14 @@ public abstract class KrollObject implements Handler.Callback
 
 	public KrollObject()
 	{
-		handler = new Handler(TiMessenger.getRuntimeMessenger().getLooper(), this);	
+		//david
+		//2013-3-7
+		//force krollruntime to use mainthread looper
+		if(Looper.getMainLooper() == null) {
+			Looper.prepareMainLooper();
+		}
+		handler = new Handler(Looper.getMainLooper(), this);
+		
 	}
 
 	/**

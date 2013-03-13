@@ -189,7 +189,11 @@ public class TiMessenger implements Handler.Callback
 
 	private TiMessenger()
 	{
-		looper = Looper.myLooper();
+		looper = Looper.getMainLooper();
+		if(looper == null) {
+			Looper.prepareMainLooper();
+			looper = Looper.getMainLooper();
+		}
 		handler = new Handler(this);
 	}
 
@@ -199,6 +203,11 @@ public class TiMessenger implements Handler.Callback
 	 */
 	public Looper getLooper()
 	{
+		looper = Looper.getMainLooper();
+		if(looper == null) {
+			Looper.prepareMainLooper();
+			looper = Looper.getMainLooper();
+		}
 		return looper;
 	}
 

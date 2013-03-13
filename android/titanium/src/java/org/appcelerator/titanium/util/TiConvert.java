@@ -333,6 +333,14 @@ public class TiConvert
 		} else if (value instanceof String) {
 			return Boolean.parseBoolean(((String) value));
 
+		} else if (value instanceof Integer) { 
+			if((Integer)value == 0) {
+				return false;
+			} else {
+				return true;
+			}
+		} else if(value == null) {
+			return false;
 		} else {
 			throw new IllegalArgumentException("Unable to convert " + (value == null ? "null" : value.getClass().getName()) + " to boolean.");
 		}

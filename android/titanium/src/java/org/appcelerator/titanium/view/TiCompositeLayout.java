@@ -17,6 +17,7 @@ import org.appcelerator.titanium.TiC;
 import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.TiLaunchActivity;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUIHelper;
 
 import android.app.Activity;
@@ -27,6 +28,7 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.view.ViewGroup.OnHierarchyChangeListener;
 
 /**
@@ -122,11 +124,11 @@ public class TiCompositeLayout extends ViewGroup
 		this.arrangement = arrangement;
 		
 		if (arrangement == LayoutArrangement.DEFAULT) {
-			android.util.Log.d("set TiCompositeLayout arrangement", "DEFAULT");
+			Log.d(TAG, "set TiCompositeLayout arrangement DEFAULT" , Log.DEBUG_MODE);
 		} else if (arrangement == LayoutArrangement.HORIZONTAL) {
-			android.util.Log.d("set TiCompositeLayout arrangement", "HORIZONTAL");
+			Log.d(TAG, "set TiCompositeLayout arrangement HORIZONTAL", Log.DEBUG_MODE);
 		} else if (arrangement == LayoutArrangement.VERTICAL) {
-			android.util.Log.d("set TiCompositeLayout arrangement", "VERTICAL");
+			Log.d(TAG, "set TiCompositeLayout arrangement VERTICAL", Log.DEBUG_MODE);
 		}
 		
 		
@@ -277,101 +279,15 @@ public class TiCompositeLayout extends ViewGroup
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 	{
-//		int childCount = getChildCount();
-//		int wFromSpec = MeasureSpec.getSize(widthMeasureSpec);
-//		int hFromSpec = MeasureSpec.getSize(heightMeasureSpec);
-//		int wSuggested = getSuggestedMinimumWidth();
-//		int hSuggested = getSuggestedMinimumHeight();
-//		int w = Math.max(wFromSpec, wSuggested);
-//		int wMode = MeasureSpec.getMode(widthMeasureSpec);
-//		int h = Math.max(hFromSpec, hSuggested);
-//		int hMode = MeasureSpec.getMode(heightMeasureSpec);
-//
-//		int maxWidth = 0;
-//		int maxHeight = 0;
-//
-//		// Used for horizontal layout only
-//		int horizontalRowWidth = 0;
-//		int horizontalRowHeight = 0;
-//
-//		for(int i = 0; i < childCount; i++) {
-//			View child = getChildAt(i);
-//			if (child.getVisibility() != View.GONE) {
-//				constrainChild(child, w, wMode, h, hMode);
-//			}
-//
-//			int childWidth = child.getMeasuredWidth();
-//			int childHeight = child.getMeasuredHeight();
-//			if (child.getVisibility() != View.GONE) {
-//				childWidth += getViewWidthPadding(child, w);
-//				childHeight += getViewHeightPadding(child, h);
-//			}
-//
-//			if (isHorizontalArrangement()) {
-//				if (enableHorizontalWrap) {
-//
-//					if ((horizontalRowWidth + childWidth) > w) {
-//						horizontalRowWidth = childWidth;
-//						maxHeight += horizontalRowHeight;
-//						horizontalRowHeight = childHeight;
-//
-//					} else {
-//						horizontalRowWidth += childWidth;
-//						maxWidth = Math.max(maxWidth, horizontalRowWidth);
-//					}
-//
-//				} else {
-//					// For horizontal layout without wrap, just keep on adding the widths since it doesn't wrap
-//					maxWidth += childWidth;
-//				}
-//				horizontalRowHeight = Math.max(horizontalRowHeight, childHeight);
-//
-//			} else {
-//				maxWidth = Math.max(maxWidth, childWidth);
-//
-//				if (isVerticalArrangement()) {
-//					maxHeight += childHeight;
-//				} else {
-//					maxHeight = Math.max(maxHeight, childHeight);
-//				}
-//			}
-//		}
-//
-//		// Add height for last row in horizontal layout
-//		if (isHorizontalArrangement()) {
-//			maxHeight += horizontalRowHeight;
-//		}
-//
-//		// account for padding
-//		maxWidth += getPaddingLeft() + getPaddingRight();
-//		maxHeight += getPaddingTop() + getPaddingBottom();
-//
-//		// Account for border
-//		//int padding = Math.round(borderHelper.calculatePadding());
-//		//maxWidth += padding;
-//		//maxHeight += padding;
-//
-//		// check minimums
-//		maxWidth = Math.max(maxWidth, getSuggestedMinimumWidth());
-//		maxHeight = Math.max(maxHeight, getSuggestedMinimumHeight());
-//
-//		int measuredWidth = getMeasuredWidth(maxWidth, widthMeasureSpec);
-//		int measuredHeight = getMeasuredHeight(maxHeight,heightMeasureSpec);
-//		setMeasuredDimension(measuredWidth, measuredHeight);
-//		
-		
-		
-		
-		
-		
-		
-		
-		if(proxy.get() != null) {
-			if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
-				android.util.Log.d("On measure ! ", (String)proxy.get().getProperty(TiC.PROPERTY_ID) );
-			}
-			else {
-				android.util.Log.d("On measure ! ", "no ID" );
+
+		if(Log.isDebugModeEnabled()) {
+			if(proxy.get() != null) {
+				if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
+					Log.d(TAG, "On measure ! "+ TiConvert.toString(proxy.get().getProperty(TiC.PROPERTY_ID)) , Log.DEBUG_MODE);
+				}
+				else {
+					Log.d(TAG, "On measure ! "+ proxy.get().toString() , Log.DEBUG_MODE);
+				}
 			}
 		}
 		
@@ -384,7 +300,10 @@ public class TiCompositeLayout extends ViewGroup
 		int wMode = MeasureSpec.getMode(widthMeasureSpec);
 		int h = Math.max(hFromSpec, hSuggested);
 		int hMode = MeasureSpec.getMode(heightMeasureSpec);
-
+		
+		Log.d(TAG, "w and wMode are ==> "+new Integer(w).toString()+", "+new Integer(wMode).toString() , Log.DEBUG_MODE);
+		Log.d(TAG, "h and hMode are ==> "+new Integer(h).toString()+", "+new Integer(hMode).toString() , Log.DEBUG_MODE);
+		
 		int maxWidth = 0;
 		int maxHeight = 0;
 
@@ -396,14 +315,7 @@ public class TiCompositeLayout extends ViewGroup
 		int totalFixedHeight = 0;
 		
 		float sumFlex = 0.0f;
-		
-		int marginTop = 0;
-		int marginLeft = 0;
-		int marginRight = 0;
-		int marginBottom = 0;
-		
-		int HMargins = 0;
-		int VMargins = 0;
+		int flexUnitCount = 0;
 
 		for (int i = 0; i < childCount; i++) {
 
@@ -419,12 +331,8 @@ public class TiCompositeLayout extends ViewGroup
 				childHeight += getViewHeightPadding(child, h);
 			}
 
-			// android.util.Log.d("ourView is ", new String().format("%s",
-			// proxy.peekView().class));
-
 			if (isHorizontalArrangement()) {
 				if (enableHorizontalWrap) {
-
 					if ((horizontalRowWidth + childWidth) > w) {
 						horizontalRowWidth = childWidth;
 						maxHeight += horizontalRowHeight;
@@ -455,46 +363,42 @@ public class TiCompositeLayout extends ViewGroup
 			TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
 			if (params.optionWidth != null) {
 				totalFixedWidth += params.optionWidth.getIntValue();
-				android.util.Log.d("this width is ", new Integer(params.optionWidth.getIntValue()).toString());
+				Log.d(TAG, "this width is "+ new Integer(params.optionWidth.getIntValue()).toString(), Log.DEBUG_MODE);
 			}
+			else if(childWidth > 0 && params.flex == null) {
+				totalFixedWidth += childWidth;
+				Log.d(TAG, "option width is 0, this width is "+ new Integer(childWidth).toString(), Log.DEBUG_MODE);
+			}
+			
 			if (params.optionHeight != null) {
 				totalFixedHeight += params.optionHeight.getIntValue();
-				android.util.Log.d("this height is ", new Integer(params.optionHeight.getIntValue()).toString());
+				Log.d(TAG, "this height is "+ new Integer(params.optionHeight.getIntValue()).toString(), Log.DEBUG_MODE);
+			}
+			else if(childHeight > 0 && params.flex == null) {
+				totalFixedHeight += childHeight;
+				Log.d(TAG, "option height is 0, this height is "+ new Integer(childHeight).toString(), Log.DEBUG_MODE);
 			}
 
-			android.util.Log.d("current totalFixedWidth is --------> ", new Integer(totalFixedWidth).toString());
-			android.util.Log.d("current totalFixedHeight is --------> ", new Integer(totalFixedHeight).toString());
+			Log.d(TAG, "current totalFixedWidth and totalFixedHeight are "+
+					new Integer(totalFixedWidth).toString() +", "+ new Integer(totalFixedHeight).toString(), Log.DEBUG_MODE);
 			
-			if(isHorizontalArrangement()) {
-				if (params.flex != null && params.optionWidth == null) {
-					android.util.Log.d("params.flex != null and optionWidth != null", "true");
-					if (params.flex.getValue() > 0.0001f) {
-						sumFlex += params.flex.getValue();
-						android.util.Log.d("this flex is ", new Float(params.flex.getValue()).toString());
-					}
+			if (params.flex != null) {
+				if(isVerticalArrangement() && params.optionHeight == null){
+					sumFlex += params.flex.getValue();
+					flexUnitCount ++;
+					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
 				}
-//				if (params.optionLeft != null) {
-//					HMargins += params.optionLeft.getIntValue();
-//				}
-//				if (params.optionRight != null) {
-//					HMargins += params.optionRight.getIntValue();
-//				}
+				else if( (isHorizontalArrangement() || isDefaultArrangement()) && params.optionWidth == null) {
+					sumFlex += params.flex.getValue();
+					flexUnitCount ++;
+					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
+				}
+				else {
+					Log.w(TAG, "unknown arrangement method!", Log.DEBUG_MODE);
+				}
 			}
 			else {
-				if (params.flex != null && params.optionHeight == null) { 
-					android.util.Log.d("params.flex != null and optionHeight != null", "true");
-					if (params.flex.getValue() > 0.0001f) {
-						sumFlex += params.flex.getValue();
-						android.util.Log.d("this flex is ", new Float(params.flex.getValue()).toString());
-					}
-				}
-//					if (params.optionTop != null) {
-//						VMargins += params.optionTop.getIntValue();
-//					}
-//					if (params.optionBottom != null) {
-//						VMargins += params.optionBottom.getIntValue();
-//					}
-
+				Log.d(TAG, "params.flex == null", Log.DEBUG_MODE);
 			}
 		}
 
@@ -519,55 +423,75 @@ public class TiCompositeLayout extends ViewGroup
 		int measuredWidth = getMeasuredWidth(maxWidth, widthMeasureSpec);
 		int measuredHeight = getMeasuredHeight(maxHeight, heightMeasureSpec);
 		
-		
 		int remainFlexableWidth = measuredWidth - totalFixedWidth; // - HMargins;
 		int remainFlexableHeight = measuredHeight - totalFixedHeight; // - VMargins;
 		
-		android.util.Log.d("this remainFlexableWidth is ", new Integer(remainFlexableWidth).toString());
-		android.util.Log.d("this remainFlexableHeight is ", new Integer(remainFlexableHeight).toString());
+		Log.d(TAG, "this remainFlexableWidth, remainFlexableHeight are "+
+				new Integer(remainFlexableWidth).toString()+", "+
+				new Integer(remainFlexableHeight).toString(), Log.DEBUG_MODE);
 		
-		for (int i = 0; i < childCount; i++) {
-			View child = getChildAt(i);
-			android.util.Log.d("this child is ", child.getClass().getName());
-			TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
-			if(isHorizontalArrangement()) {
-				if(params.flex != null && params.optionWidth == null) {
-					//eg: flex = 2
-					int childCalcWidth = (int)(remainFlexableWidth * params.flex.getValue() / sumFlex + 0.5) ;
-					android.util.Log.d("this w and h are ", new Integer(childCalcWidth).toString() +", "+new Integer(measuredHeight).toString());
-					//((TiView)child).setMeasuredDimension(childCalcWidth, measuredHeight);
-					constrainChild(child, childCalcWidth, wMode, measuredHeight, hMode);
+		int childCalcWidth = 0;
+		int childCalcHeight = 0;
+		int currentTotalCalcWidth = 0;
+		int currentTotalCalcHeight = 0;
+//		
+//		int childrenTotalMeasuredWidth = 0;
+//		int childrenTotalMeasuredHeight = 0;
+//		
+		if(flexUnitCount > 0) {
+//			Log.d(TAG, "begin setting flex ", Log.DEBUG_MODE);
+//			Log.d(TAG, "sumFlex is " + new Float(sumFlex).toString(), Log.DEBUG_MODE);
+//			Log.d(TAG, "this rw and rh are "+new Integer(remainFlexableWidth).toString() +", "+
+//					new Integer(remainFlexableHeight).toString(), Log.DEBUG_MODE);
+//			
+			for (int i = 0; i < childCount; i++) {
+				View child = getChildAt(i);
+				
+				Log.d(TAG, "this child is "+child.getClass().getName(), Log.DEBUG_MODE);
+				
+				TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
+				if(isHorizontalArrangement()) {
+					if(params.flex != null && params.optionWidth == null) {
+						//eg: flex = 2
+						if(flexUnitCount > 1) {
+							childCalcWidth = (int)Math.round(remainFlexableWidth * params.flex.getValue() / sumFlex) ;
+							currentTotalCalcWidth += childCalcWidth;
+							flexUnitCount--;
+						}
+						else {
+							childCalcWidth = remainFlexableWidth - currentTotalCalcWidth;
+						}
+						Log.d(TAG, "this w and h are "+new Integer(childCalcWidth).toString() +", "+
+								new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
+						params.autoFillsWidth = true;
+						constrainChild(child, childCalcWidth, MeasureSpec.EXACTLY, measuredHeight, hMode);
+					}
 				}
-//				else if(params.flex == null && params.optionWidth != null) {
-//					//eg: width=2
-//					//((TiView)child).setMeasuredDimension(params.optionWidth.getIntValue(), measuredHeight);
-//					constrainChild(child, params.optionWidth.getIntValue(), wMode, measuredHeight, hMode);
-//				}
-//				else {
-//					//eg: null property
-//					//((TiView)child).setMeasuredDimension(w, h);
-//					constrainChild(child, maxWidth, wMode, maxHeight, hMode);
-//				}
-			}
-			else {
-				if(params.flex != null && params.optionHeight == null) {
-					int childCalcHeight = (int)(remainFlexableHeight * params.flex.getValue() / sumFlex + 0.5) ;
-					android.util.Log.d("this w and h are ", new Integer(measuredWidth).toString() +", "+new Integer(childCalcHeight).toString());
-					//((TiView)child).setMeasuredDimension(measuredWidth, childCalcHeight);
-					constrainChild(child, measuredWidth, wMode, childCalcHeight, hMode);
+				else {
+					if(params.flex != null && params.optionHeight == null) {
+						if(flexUnitCount > 1) {
+							childCalcHeight = (int)Math.round(remainFlexableHeight * params.flex.getValue() / sumFlex) ;
+							currentTotalCalcHeight += childCalcHeight;
+							flexUnitCount--;
+						}
+						else {
+							childCalcHeight = remainFlexableHeight - currentTotalCalcHeight;
+						}
+						Log.d(TAG, "this w and h are "+new Integer(measuredWidth).toString() +", "+
+								new Integer(childCalcHeight).toString(), Log.DEBUG_MODE);
+						params.autoFillsHeight = true;
+						constrainChild(child, measuredWidth, wMode, childCalcHeight, MeasureSpec.EXACTLY);
+					}		
 				}
-//				else if(params.flex == null && params.optionHeight != null) {
-//					//eg: width=2
-//					//((TiView)child).setMeasuredDimension(measuredWidth, params.optionHeight.getIntValue());
-//					constrainChild(child, measuredWidth, wMode, params.optionHeight.getIntValue(), hMode);
-//				}
-//				else {
-//					//eg: null property
-//					//((TiView)child).setMeasuredDimension(w, h);
-//					constrainChild(child, maxWidth, wMode, maxHeight, hMode);
-//				}
+//				childrenTotalMeasuredWidth += child.getMeasuredWidth();
+//				childrenTotalMeasuredHeight += child.getMeasuredHeight();Removing
 			}
 		}
+		
+		Log.d(TAG, "measuredWidth is "+
+				new Integer(measuredWidth).toString(), Log.DEBUG_MODE);
+		Log.d(TAG, "measuredHeight is "
+				+new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
 		
 		setMeasuredDimension(measuredWidth, measuredHeight);
 	}
@@ -584,14 +508,23 @@ public class TiCompositeLayout extends ViewGroup
 		if (p.optionWidth != null) {
 			if (p.optionWidth.isUnitPercent() && width > 0) {
 				childDimension = getAsPercentageValue(p.optionWidth.getValue(), width);
-			} else {
+			} else if(p.optionWidth.isUnitAuto() || p.sizeOrFillWidthEnabled) {
+				Log.d(TAG, "p.isUnitAuto ===> true", Log.DEBUG_MODE);
+				//SIZE
+				childDimension = LayoutParams.WRAP_CONTENT;
+			}
+			else {
 				childDimension = p.optionWidth.getAsPixels(this);
 			}
 		} else {
 			if (p.autoFillsWidth) {
 				childDimension = LayoutParams.FILL_PARENT;
-			} 
-			else {
+			}
+			else if(p.flex != null) {
+				if(p.optionWidth != null) {
+					childDimension = width;
+				}
+			}else {
 				// Look for sizeFill conflicts
 				hasSizeFillConflict(child, sizeFillConflicts, true);
 				checkedForConflict = true;
@@ -608,14 +541,24 @@ public class TiCompositeLayout extends ViewGroup
 		childDimension = LayoutParams.WRAP_CONTENT;
 		if (p.optionHeight != null) {
 			if (p.optionHeight.isUnitPercent() && height > 0) {
+				//android.util.Log.d("constrain child and p.optionHeight.isUnitPercent() && height > 0 ===>", "true");
 				childDimension = getAsPercentageValue(p.optionHeight.getValue(), height);
-			} else {
+			} else if(p.optionHeight.isUnitAuto() || p.sizeOrFillHeightEnabled) {
+				//android.util.Log.d("p.isUnitAuto ===>", "true");
+				childDimension = LayoutParams.WRAP_CONTENT;
+			}
+			else{
 				childDimension = p.optionHeight.getAsPixels(this);
 			}
+			
 		} else {
 			// If we already checked for conflicts before, we don't need to again
 			if (p.autoFillsHeight || (checkedForConflict && sizeFillConflicts[1] == HAS_SIZE_FILL_CONFLICT)) {
 				childDimension = LayoutParams.FILL_PARENT;
+			}else if(p.flex != null) {
+				if(p.optionHeight != null) {
+					childDimension = height;
+				}
 			} else if (!checkedForConflict) {
 				hasSizeFillConflict(child, sizeFillConflicts, true);
 				if (sizeFillConflicts[1] == HAS_SIZE_FILL_CONFLICT) {
@@ -623,15 +566,27 @@ public class TiCompositeLayout extends ViewGroup
 				}
 			}
 		}
+		
+		 //android.util.Log.d("constrain child and child dimension ===>", new Integer(childDimension).toString() );
+
 
 		int heightPadding = getViewHeightPadding(child, height);
 		int heightSpec = ViewGroup.getChildMeasureSpec(MeasureSpec.makeMeasureSpec(height, hMode), heightPadding,
 			childDimension);
 
 		child.measure(widthSpec, heightSpec);
-		// Useful for debugging.
-		// int childWidth = child.getMeasuredWidth();
-		// int childHeight = child.getMeasuredHeight();
+//		 //Useful for debugging.
+		 int childWidth = child.getMeasuredWidth();
+		 int childHeight = child.getMeasuredHeight();
+		 Log.d(TAG, "constrain child and got w and h ===>"+ 
+				new Integer(childWidth).toString() +"  |  "+
+				new Integer(childHeight).toString(), Log.DEBUG_MODE);	 
+	}
+	
+	//david add
+	//2013-2-25
+	private int getDefaultSizeBehavior() {
+		return 0;
 	}
 
 	// Try to calculate width from pins, if we couldn't calculate from pins or we don't need to, then return the
@@ -805,6 +760,9 @@ public class TiCompositeLayout extends ViewGroup
 
 				child.layout(horizontal[0], vertical[0], horizontal[1], vertical[1]);
 
+				Log.d(TAG, "onLayout call View.layout finished!", Log.DEBUG_MODE);
+				
+				
 				currentHeight += newHeight;
 				if (params.optionTop != null) {
 					currentHeight += params.optionTop.getAsPixels(this);
@@ -814,111 +772,6 @@ public class TiCompositeLayout extends ViewGroup
 
 		TiViewProxy viewProxy = (proxy == null ? null : proxy.get());
 		TiUIHelper.firePostLayoutEvent(viewProxy);
-
-//		
-//		if(proxy.get() != null) {
-//			if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
-//				android.util.Log.d("On Layout ! ", (String)proxy.get().getProperty(TiC.PROPERTY_ID) );
-//			}
-//			else {
-//				android.util.Log.d("On Layout ! ", "no ID" );
-//			}
-//		}
-//		
-//		android.util.Log.d("l ==>", new Integer(l).toString());
-//		android.util.Log.d("t ==>", new Integer(t).toString());
-//		android.util.Log.d("r ==>", new Integer(r).toString());
-//		android.util.Log.d("b ==>", new Integer(b).toString());
-//
-//		int count = getChildCount();
-//
-//		String str = String.format("%d", count);
-//		android.util.Log.d("onLayout child count is ", str);
-//
-//		int left = 0;
-//		int top = 0;
-//		int right = r - l;
-//		int bottom = b - t;
-//
-//		double sumFlex = 0.0f;
-//		ArrayList<TiCompositeLayout.LayoutParams> offsetValues = new ArrayList<TiCompositeLayout.LayoutParams>();
-//
-//		if (needsSort) {
-//			viewSorter.clear();
-//			if (count > 1) { // No need to sort one item.
-//				for (int i = 0; i < count; i++) {
-//					View child = getChildAt(i);
-//					TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
-//					params.index = i;
-//					viewSorter.add(child);
-//				}
-//
-//				detachAllViewsFromParent();
-//				int i = 0;
-//				for (View child : viewSorter) {
-//					attachViewToParent(child, i++, child.getLayoutParams());
-//				}
-//			}
-//			needsSort = false;
-//		}
-//		// viewSorter is not needed after this. It's a source of
-//		// memory leaks if it retains the views it's holding.
-//		viewSorter.clear();
-//		
-//		
-//		int marginTop = 0;
-//		int marginLeft = 0;
-//		int marginRight = 0;
-//		int marginBottom = 0;
-//		int lastRight = 0;
-//		int lastBottom = 0;
-//		
-//		
-//		for (int i = 0; i < count; i++) {
-//			View child = getChildAt(i);
-//			android.util.Log.d("this child is ", child.getClass().getName());
-//			TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
-//			
-//			if (params.marginTop != null) {
-//				marginTop = params.marginTop.getIntValue();
-//			} else {
-//				marginTop = 0;
-//			}
-//			if (params.marginLeft != null) {
-//				marginLeft = params.marginLeft.getIntValue();
-//			} else {
-//				marginLeft = 0;
-//			}
-//			if (params.marginRight != null) {
-//				marginRight = params.marginRight.getIntValue();
-//			} else {
-//				marginRight = 0;
-//			}
-//			if (params.marginBottom != null) {
-//				marginBottom = params.marginBottom.getIntValue();
-//			} else {
-//				marginBottom = 0;
-//			}
-//			android.util.Log.d("marginTop ==>", new Integer(marginTop).toString());
-//			android.util.Log.d("marginLeft ==>", new Integer(marginLeft).toString());
-//			android.util.Log.d("marginRight ==>", new Integer(marginRight).toString());
-//			android.util.Log.d("marginBottom ==>", new Integer(marginBottom).toString());
-//			
-//			child.layout(lastRight + marginLeft, 
-//					lastBottom + marginTop, 
-//					lastRight + marginLeft + child.getMeasuredWidth(), 
-//					lastBottom + marginTop + child.getMeasuredHeight());
-//			
-//			if (isHorizontalArrangement()) {
-//				lastRight = lastRight + child.getMeasuredWidth() + marginLeft + marginRight;
-//			} else {
-//				lastBottom = lastBottom + child.getMeasuredHeight() + marginTop + marginBottom;
-//			}
-//			
-//		}
-//
-//		TiViewProxy viewProxy = (proxy == null ? null : proxy.get());
-//		TiUIHelper.firePostLayoutEvent(viewProxy);
 }
 
 	// option0 is left/top, option1 is right/bottom

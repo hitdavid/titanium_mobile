@@ -21,8 +21,7 @@ import org.appcelerator.titanium.view.TiUIView;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,26 +39,16 @@ public class TiUIScrollView extends TiUIView
 	private boolean setInitialOffset = false;
 	private boolean mScrollingEnabled = true;
 
-	private class TiScrollViewLayout extends TiCompositeLayout
+	public class TiScrollViewLayout extends TiCompositeLayout
 	{
 		private static final int AUTO = Integer.MAX_VALUE;
 		private int parentWidth = 0;
 		private int parentHeight = 0;
 		private boolean canCancelEvents = true;
-		private GestureDetector gestureDetector;
 
 		public TiScrollViewLayout(Context context, LayoutArrangement arrangement)
 		{
 			super(context, arrangement, proxy);
-			gestureDetector = new GestureDetector(new SimpleOnGestureListener()
-			{
-				@Override
-				public void onLongPress(MotionEvent e)
-				{
-					// Only do this for long presses to match iOS behavior
-					requestDisallowInterceptTouchEvent(true);
-				}
-			});
 		}
 
 		public void setParentWidth(int width)
@@ -81,10 +70,11 @@ public class TiUIScrollView extends TiUIView
 		public boolean dispatchTouchEvent(MotionEvent ev)
 		{
 			// If canCancelEvents is false, then we want to prevent the scroll view from canceling the touch
-			// events of the child view by calling requestDisallowInterceptTouchEvent(true)
+			// events of the child view
 			if (!canCancelEvents) {
-				gestureDetector.onTouchEvent(ev);
+				requestDisallowInterceptTouchEvent(true);
 			}
+
 			return super.dispatchTouchEvent(ev);
 		}
 
@@ -243,9 +233,27 @@ public class TiUIScrollView extends TiUIView
 		@Override
 		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+//			android.util.Log.d("in ScrollView widthMeasureSpec ==> ", new Integer(widthMeasureSpec).toString() );
+//			android.util.Log.d("in ScrollView heightMeasureSpec ==> ", new Integer(heightMeasureSpec).toString() );
+//			
+//			android.util.Log.d("in ScrollView width ==> ", new Integer(MeasureSpec.getSize(widthMeasureSpec)).toString() );
+//			android.util.Log.d("in ScrollView height ==> ", new Integer(MeasureSpec.getSize(heightMeasureSpec)).toString() );
+//			
+			
 			layout.setParentHeight(MeasureSpec.getSize(heightMeasureSpec));
 			layout.setParentWidth(MeasureSpec.getSize(widthMeasureSpec));
+//			
+//			android.util.Log.d("in ScrollView after setParent widthMeasureSpec ==> ", new Integer(widthMeasureSpec).toString() );
+//			android.util.Log.d("in ScrollView after setParent heightMeasureSpec ==> ", new Integer(heightMeasureSpec).toString() );
+//			
+			//layout.measure(widthMeasureSpec, heightMeasureSpec);
+			//this.setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//			
+//			android.util.Log.d("in ScrollView ==>", "after measure");
+//			android.util.Log.d("in ScrollView after measure widthMeasureSpec ==> ", new Integer(widthMeasureSpec).toString() );
+//			android.util.Log.d("in ScrollView after measure heightMeasureSpec ==> ", new Integer(heightMeasureSpec).toString() );
+//			
 
 			// This is essentially doing the same logic as if you did setFillViewPort(true). In native Android, they
 			// don't measure the child again if measured height of content view < scrollViewheight. But we want to do
@@ -264,7 +272,8 @@ public class TiUIScrollView extends TiUIView
 				// If we measure the child height to be greater than the parent height, use it in subsequent
 				// calculations to make sure the children are measured correctly the second time around.
 				height = Math.max(child.getMeasuredHeight(), height);
-				int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+				int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.AT_MOST);
+
 				child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
 			}
@@ -349,6 +358,7 @@ public class TiUIScrollView extends TiUIView
 		@Override
 		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			
 			layout.setParentHeight(MeasureSpec.getSize(heightMeasureSpec));
 			layout.setParentWidth(MeasureSpec.getSize(widthMeasureSpec));
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -426,6 +436,11 @@ public class TiUIScrollView extends TiUIView
 		}
 		if (TiC.PROPERTY_SCROLLING_ENABLED.equals(key)) {
 			setScrollingEnabled(newValue);
+		}
+		if (TiC.PROPERTY_OVER_SCROLL_MODE.equals(key)) {
+			if (Build.VERSION.SDK_INT >= 9) {
+				getNativeView().setOverScrollMode(TiConvert.toInt(newValue, View.OVER_SCROLL_ALWAYS));
+			}
 		}
 		super.propertyChanged(key, oldValue, newValue, proxy);
 	}
@@ -524,6 +539,12 @@ public class TiUIScrollView extends TiUIView
 
 		if (d.containsKey(TiC.PROPERTY_HORIZONTAL_WRAP)) {
 			scrollViewLayout.setEnableHorizontalWrap(TiConvert.toBoolean(d, TiC.PROPERTY_HORIZONTAL_WRAP));
+		}
+		
+		if (d.containsKey(TiC.PROPERTY_OVER_SCROLL_MODE)) {
+			if (Build.VERSION.SDK_INT >= 9) {
+				view.setOverScrollMode(TiConvert.toInt(d.get(TiC.PROPERTY_OVER_SCROLL_MODE), View.OVER_SCROLL_ALWAYS));
+			}
 		}
 
 		setNativeView(view);

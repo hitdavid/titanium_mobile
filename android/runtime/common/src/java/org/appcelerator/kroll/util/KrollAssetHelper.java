@@ -22,7 +22,9 @@ import android.util.Log;
 public class KrollAssetHelper
 {
 	private static final String TAG = "TiAssetHelper";
-	private static WeakReference<AssetManager> manager;
+	//private static WeakReference<AssetManager> manager;
+	private static AssetManager manager;
+	
 	private static String packageName, cacheDir;
 	private static AssetCrypt assetCrypt;
 
@@ -38,7 +40,9 @@ public class KrollAssetHelper
 
 	public static void init(Context context)
 	{
-		KrollAssetHelper.manager = new WeakReference<AssetManager>(context.getAssets());
+		Log.d("KrollAssetHelper public static void init(Context context) ", context.getAssets().toString());
+		//KrollAssetHelper.manager = new WeakReference<AssetManager>(context.getAssets());
+		KrollAssetHelper.manager = context.getAssets();
 		KrollAssetHelper.packageName = context.getPackageName();
 		KrollAssetHelper.cacheDir = context.getCacheDir().getAbsolutePath();
 	}
@@ -68,7 +72,7 @@ public class KrollAssetHelper
 		}
 
 		try {
-			AssetManager assetManager = manager.get();
+			AssetManager assetManager = KrollAssetHelper.manager;
 			if (assetManager == null) {
 				Log.e(TAG, "AssetManager is null, can't read asset: " + path);
 				return null;

@@ -45,7 +45,7 @@ public abstract class KrollRuntime implements Handler.Callback
 
 	private static KrollRuntime instance;
 	private static int activityRefCount = 0;
-	private static int serviceRefCount = 0;
+	private static int serviceReceiverRefCount = 0;
 
 	private WeakReference<KrollApplication> krollApplication;
 	private KrollRuntimeThread thread;
@@ -75,28 +75,48 @@ public abstract class KrollRuntime implements Handler.Callback
 	public static final int DEFAULT_THREAD_STACK_SIZE = 16 * 1024;
 	public static final String SOURCE_ANONYMOUS = "<anonymous>";
 
-	public static class KrollRuntimeThread extends Thread
+	public static class KrollRuntimeThread// extends Thread
 	{
-		private static final String TAG = "KrollRuntimeThread";
+		private static final String TAG = "KrollRuntimeThreadInMainLooper";
 
 		private KrollRuntime runtime = null;
+		
+		private Thread mainThread = null;
 
 		public KrollRuntimeThread(KrollRuntime runtime, int stackSize)
 		{
-			super(null, null, TAG, stackSize);
+			//super(null, null, TAG, stackSize);
 			this.runtime = runtime;
+			
+		}
+		
+		public Thread getThread() {
+			if(this.mainThread != null) {
+				return this.mainThread;
+			}
+			else {
+				run();
+				if(this.mainThread != null) {
+					return this.mainThread;
+				}
+				return null;
+			}
 		}
 
 		public void run()
 		{
+			//david=2013-3-1
+			//Log.d(TAG, "=== force get run loop in main thread begin");
 			Looper looper;
-
-			Looper.prepare();
+			//Looper.prepare();
 			synchronized (this) {
-				looper = Looper.myLooper();
+				//looper = Looper.myLooper();
+				looper = Looper.getMainLooper();
 				notifyAll();
 			}
 
+			this.mainThread = Looper.getMainLooper().getThread();
+			
 			// initialize the runtime instance
 			runtime.threadId = looper.getThread().getId();
 			runtime.handler = new Handler(looper, runtime);
@@ -109,24 +129,29 @@ public abstract class KrollRuntime implements Handler.Callback
 			runtime.doInit();
 
 			// start handling messages for this thread
-			Looper.loop();
+			//Looper.loop();
+//			Log.d(TAG, "=== force get run loop in main thread end");
 		}
 	}
 
 	public static void init(Context context, KrollRuntime runtime)
 	{
+		Log.d(TAG, "=== Kroll Runtime init begin");
 		// Initialized the runtime if it isn't already initialized
 		if (runtimeState != State.INITIALIZED) {
+			Log.d(TAG, "=== runtimeState != State.INITIALIZED");
+			
 			int stackSize = runtime.getThreadStackSize(context);
 			runtime.krollApplication = new WeakReference<KrollApplication>((KrollApplication) context);
 			runtime.thread = new KrollRuntimeThread(runtime, stackSize);
 			runtime.exceptionHandlers = new HashMap<String, KrollExceptionHandler>();
 
 			instance = runtime; // make sure this is set before the runtime thread is started
-			runtime.thread.start();
+			runtime.thread.run();
 		}
 
 		KrollAssetHelper.init(context);
+		Log.d(TAG, "=== Kroll Runtime init end");
 	}
 
 	public static KrollRuntime getInstance()
@@ -272,6 +297,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	{
 		switch (msg.what) {
 			case MSG_INIT: {
+				Log.d(TAG, "========== handleMessage doInit()");
 				doInit();
 				return true;
 			}
@@ -320,14 +346,25 @@ public abstract class KrollRuntime implements Handler.Callback
 		// state to RELAUNCHED. If we are in the DISPOSED state, we need to re-initialize the runtime here.
 		synchronized (runtimeState) {
 			if (runtimeState == State.DISPOSED) {
-				instance.initLatch = new CountDownLatch(1);
+				//david
+				//2013-3-7
+				//force krollruntime to use mainthread looper
+				//Log.e(TAG, "runtimeState == State.DISPOSED");
+//				instance.initLatch = new CountDownLatch(1);
+//				runtimeState = State.RELAUNCHED;
+				
+				//david
+				//2013-3-7
+				//press back button when running, application will terminate.
+				//when luanch it again, runtimeState is State.DISPOSED
+				
+				instance.doInit();
 				instance.handler.sendEmptyMessage(MSG_INIT);
-
 			} else if (runtimeState == State.RELEASED) {
+				//Log.e(TAG, "runtimeState == State.RELEASED");
 				runtimeState = State.RELAUNCHED;
 			}
 		}
-
 		waitForInit();
 	}
 
@@ -338,7 +375,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	public static void incrementActivityRefCount()
 	{
 		activityRefCount++;
-		if ((activityRefCount + serviceRefCount) == 1 && instance != null) {
+		if ((activityRefCount + serviceReceiverRefCount) == 1 && instance != null) {
 			syncInit();
 		}
 	}
@@ -346,7 +383,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	public static void decrementActivityRefCount()
 	{
 		activityRefCount--;
-		if ((activityRefCount + serviceRefCount) > 0 || instance == null) {
+		if ((activityRefCount + serviceReceiverRefCount) > 0 || instance == null) {
 			return;
 		}
 
@@ -359,27 +396,27 @@ public abstract class KrollRuntime implements Handler.Callback
 	}
 
 	// Similar to {@link #incrementActivityRefCount} but for a Titanium Service.
-	public static void incrementServiceRefCount()
+	public static void incrementServiceReceiverRefCount()
 	{
-		serviceRefCount++;
-		if ((activityRefCount + serviceRefCount) == 1 && instance != null) {
+		serviceReceiverRefCount++;
+		if ((activityRefCount + serviceReceiverRefCount) == 1 && instance != null) {
 			syncInit();
 		}
 	}
 
-	public static void decrementServiceRefCount()
+	public static void decrementServiceReceiverRefCount()
 	{
-		serviceRefCount--;
-		if ((activityRefCount + serviceRefCount) > 0 || instance == null) {
+		serviceReceiverRefCount--;
+		if ((activityRefCount + serviceReceiverRefCount) > 0 || instance == null) {
 			return;
 		}
 
 		instance.dispose();
 	}
 
-	public static int getServiceRefCount()
+	public static int getServiceReceiverRefCount()
 	{
-		return serviceRefCount;
+		return serviceReceiverRefCount;
 	}
 
 	private void internalDispose()

@@ -61,7 +61,8 @@ import android.view.View;
 
 	// others
 	"focusable", "touchEnabled", "visible", "enabled", "opacity",
-	"softKeyboardOnFocus", "transform"
+	"softKeyboardOnFocus", "transform",
+	
 })
 public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 {
@@ -367,23 +368,23 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	 * add by david 2013-1-11
 	 * support flex layout
 	 */
-	@Kroll.setProperty(retain=true) 
+	@Kroll.setProperty 
 	@Kroll.method
 	public void setFlex(Object flex)
 	{
-		this.setProperty(TiC.PROPERTY_FLEX, (Integer)flex);
-		Log.i("setFlex", flex.getClass().toString());
-		if(this.view == null) {
-			this.view = getOrCreateView(true);
-		}
-		
-		if(this.view != null) {
-			Log.i("setting FLEX propertity when view is not null", "begin");
-			LayoutParams lp = (LayoutParams)this.view.getLayoutParams();
-			lp.flex = new TiDimension((Integer)flex, TiDimension.TYPE_FLEX);
-			this.view.propertyChanged(TiC.PROPERTY_FLEX, null, (Integer)flex, this);
-		}
-		Log.i("setting FLEX propertity", "begin");
+//		this.setProperty(TiC.PROPERTY_FLEX, (Integer)flex);
+//		Log.i("setFlex", flex.getClass().toString());
+//		if(this.view == null) {
+//			this.view = getOrCreateView(true);
+//		}
+//		
+//		if(this.view != null) {
+//			Log.i("setting FLEX propertity when view is not null", "begin");
+//			LayoutParams lp = (LayoutParams)this.view.getLayoutParams();
+//			lp.flex = new TiDimension((Integer)flex, TiDimension.TYPE_FLEX);
+//			this.view.propertyChanged(TiC.PROPERTY_FLEX, null, (Integer)flex, this);
+//		}
+//		Log.i("setting FLEX propertity", "begin");
 		setPropertyAndFire(TiC.PROPERTY_FLEX, flex);
 	}
 	
@@ -629,6 +630,24 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 				if (child.parent != null && child.parent.get() == this) {
 					child.parent = null;
 				}
+			}
+		}
+	}
+
+	/**
+	 * Removes all children views.
+	 * @module.api
+	 */
+	@Kroll.method
+	public void removeAllChildren()
+	{
+		if (children != null) {
+			//children might be altered while we loop through it (threading)
+			//so we first copy children as it was when asked to remove all children
+			ArrayList<TiViewProxy> childViews = new ArrayList<TiViewProxy>();
+			childViews.addAll(children);
+			for (TiViewProxy child : childViews) {
+				remove(child);
 			}
 		}
 	}
