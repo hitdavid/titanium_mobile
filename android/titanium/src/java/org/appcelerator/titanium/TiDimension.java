@@ -51,6 +51,15 @@ public class TiDimension
 	public static final int TYPE_BOTTOM = 5;
 	public static final int TYPE_WIDTH = 6;
 	public static final int TYPE_HEIGHT = 7;
+	
+	
+	/*
+	 * add by david 2012-1-11
+	 */
+	public static final int TYPE_FLEX = 8;
+	
+	
+	
 
 	public static final double POINT_DPI = 72.0;
 	public static final double MM_INCH = 25.4;

@@ -2065,6 +2065,12 @@ public class TiC
 	 * @module.api
 	 */
 	public static final String PROPERTY_WIDTH = "width";
+	
+	/**
+	 * @module.api
+	 * add by david 2013-1-11
+	 */
+	public static final String PROPERTY_FLEX = "flex";
 
 	/**
 	 * @module.api

@@ -426,8 +426,11 @@ public abstract class TiUIView
 
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
 	{
+		
+		Log.i("TiUIView propertyChanged", key);
 		if (key.equals(TiC.PROPERTY_LEFT)) {
 			resetPostAnimationValues();
+			Log.i("setting left of view", TiConvert.toString(newValue));
 			if (newValue != null) {
 				layoutParams.optionLeft = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_LEFT);
 			} else {
@@ -471,6 +474,17 @@ public abstract class TiUIView
 			}else if (newValue != null){
 				Log.w(TAG, "Unsupported property type ("+(newValue.getClass().getSimpleName())+") for key: " + key+". Must be an object/dictionary");
 			}
+		} else if(key.equals(TiC.PROPERTY_FLEX)) {
+			Log.i("setting flex", "begin");
+			resetPostAnimationValues();
+			if (newValue != null) {
+				Log.i("set flex", TiConvert.toString(newValue));
+				layoutParams.flex = TiConvert.toTiDimension(TiConvert.toString(newValue),
+						TiDimension.TYPE_FLEX);
+			} else {
+				layoutParams.flex = null;
+			}
+			layoutNativeView();
 		} else if (key.equals(TiC.PROPERTY_HEIGHT)) {
 			resetPostAnimationValues();
 			if (newValue != null) {
@@ -635,7 +649,13 @@ public abstract class TiUIView
 		} else if (key.equals(TiC.PROPERTY_ACCESSIBILITY_HIDDEN)) {
 			applyAccessibilityHidden(newValue);
 
-		} else {
+		} 
+		
+		/* add by david 2012-1-11
+		 * default flex chenge listener
+		 */
+		
+		else {
 			Log.d(TAG, "Unhandled property key: " + key, Log.DEBUG_MODE);
 		}
 	}
@@ -660,6 +680,94 @@ public abstract class TiUIView
 		if (d.containsKey(TiC.PROPERTY_HORIZONTAL_WRAP)) {
 			if (nativeView instanceof TiCompositeLayout) {
 				((TiCompositeLayout) nativeView).setEnableHorizontalWrap(TiConvert.toBoolean(d, TiC.PROPERTY_HORIZONTAL_WRAP));
+			}
+		}
+		
+		if(d.containsKey(TiC.PROPERTY_WIDTH)) {
+			android.util.Log.d("processProperties ==> ", "WIDTH");
+			if (nativeView instanceof TiCompositeLayout) {
+				String width = TiConvert.toString(d, TiC.PROPERTY_WIDTH);
+
+				android.util.Log.d("processProperties get width value==> ", width);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.optionWidth = new TiDimension(width, TiDimension.TYPE_WIDTH);
+				this.setLayoutParams(lp);
+			}
+		}
+		
+		if(d.containsKey(TiC.PROPERTY_HEIGHT)) {
+			android.util.Log.d("processProperties ==> ", "HEIGHT");
+			if (nativeView instanceof TiCompositeLayout) {
+				String height = TiConvert.toString(d, TiC.PROPERTY_HEIGHT);
+
+				android.util.Log.d("processProperties get height value==> ", height);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.optionHeight = new TiDimension(height, TiDimension.TYPE_HEIGHT);
+				this.setLayoutParams(lp);
+			}
+		}
+		
+		if(d.containsKey(TiC.PROPERTY_FLEX)) {
+			android.util.Log.d("processProperties ==> ", "FLEX");
+			if (nativeView instanceof TiCompositeLayout) {
+				String flex = TiConvert.toString(d, TiC.PROPERTY_FLEX);
+
+				android.util.Log.d("processProperties get flex value==> ", flex);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.flex = new TiDimension(flex, TiDimension.TYPE_FLEX);
+				this.setLayoutParams(lp);
+			}
+		}
+		
+		if(d.containsKey(TiC.PROPERTY_LEFT)) {
+			android.util.Log.d("processProperties ==> ", "LEFT");
+			if (nativeView instanceof TiCompositeLayout) {
+				String left = TiConvert.toString(d, TiC.PROPERTY_LEFT);
+
+				android.util.Log.d("processProperties get left value==> ", left);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.marginLeft = new TiDimension(left, TiDimension.TYPE_LEFT);
+				this.setLayoutParams(lp);
+			}
+		}
+		if(d.containsKey(TiC.PROPERTY_RIGHT)) {
+			android.util.Log.d("processProperties ==> ", "RIGHT");
+			if (nativeView instanceof TiCompositeLayout) {
+				String right = TiConvert.toString(d, TiC.PROPERTY_RIGHT);
+
+				android.util.Log.d("processProperties get right value==> ", right);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.marginRight = new TiDimension(right, TiDimension.TYPE_RIGHT);
+				this.setLayoutParams(lp);
+			}
+		}
+		if(d.containsKey(TiC.PROPERTY_BOTTOM)) {
+			android.util.Log.d("processProperties ==> ", "BOTTOM");
+			if (nativeView instanceof TiCompositeLayout) {
+				String bottom = TiConvert.toString(d, TiC.PROPERTY_BOTTOM);
+
+				android.util.Log.d("processProperties get left value==> ", bottom);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.marginBottom = new TiDimension(bottom, TiDimension.TYPE_BOTTOM);
+				this.setLayoutParams(lp);
+			}
+		}
+		if(d.containsKey(TiC.PROPERTY_TOP)) {
+			android.util.Log.d("processProperties ==> ", "TOP");
+			if (nativeView instanceof TiCompositeLayout) {
+				String top = TiConvert.toString(d, TiC.PROPERTY_TOP);
+
+				android.util.Log.d("processProperties get left value==> ", top);
+				
+				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
+				lp.marginTop= new TiDimension(top, TiDimension.TYPE_TOP);
+				this.setLayoutParams(lp);
 			}
 		}
 
@@ -950,22 +1058,7 @@ public abstract class TiUIView
 					LayoutParams params = new LayoutParams();
 					params.height = android.widget.FrameLayout.LayoutParams.MATCH_PARENT;
 					params.width = android.widget.FrameLayout.LayoutParams.MATCH_PARENT;
-					// If the view already has a parent, we need to detach it from the parent
-					// and add the borderView to the parent as the child
-					ViewGroup savedParent = null;
-					android.view.ViewGroup.LayoutParams savedLayoutParams = null;
-					if (nativeView.getParent() != null) {
-						ViewParent nativeParent = nativeView.getParent();
-						if (nativeParent instanceof ViewGroup) {
-							savedParent = (ViewGroup) nativeParent;
-							savedLayoutParams = savedParent.getLayoutParams();
-							savedParent.removeView(nativeView);
-						}
-					}
 					borderView.addView(nativeView, params);
-					if (savedParent != null) {
-						savedParent.addView(getOuterView(), savedLayoutParams);
-					}
 					borderView.setVisibility(this.visibility);
 				}
 

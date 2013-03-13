@@ -1,8 +1,10 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2012 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ * 
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 
 #import <UIKit/UIKit.h>
@@ -94,6 +96,18 @@ typedef struct LayoutConstraint {
 	
 	CGFloat minimumHeight;
 	CGFloat minimumWidth;
+
+    #pragma - support flex layout, by syq
+    CGFloat flex;
+    CGFloat marginTop;
+    CGFloat marginLeft;
+    CGFloat marginRight;
+    CGFloat marginBottom;
+    CGFloat paddingTop;
+    CGFloat paddingLeft;
+    CGFloat paddingRight;
+    CGFloat paddingBottom;
+    #pragma - support flex layout (end)
 	
 } LayoutConstraint;
 

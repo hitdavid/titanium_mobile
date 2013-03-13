@@ -18,6 +18,74 @@ CFRunLoopTimerRef layoutTimer = NULL;
 pthread_mutex_t layoutMutex;
 
 
+void allNodes(NSMutableArray** array, TiViewProxy* tivp) {
+    if([tivp.children count] > 0) {
+        for (TiViewProxy* p in tivp.children) {
+            allNodes(array, p);
+        }
+    }
+    return [(NSMutableArray*)(*array) addObject:tivp];
+}
+
+
+NSMutableArray* getAllNodesOfProxy(NSArray* array) {
+    NSMutableArray* all = [[NSMutableArray alloc] init];
+    for (TiViewProxy* proxy in array) {
+        NSMutableArray* allChildrenOfProxy = [[NSMutableArray alloc] init];
+        [allChildrenOfProxy addObject:proxy];
+        allNodes(&allChildrenOfProxy, proxy);
+        [all addObject:allChildrenOfProxy];
+    }
+    
+    return all;
+}
+
+
+NSArray* isInSameTree(NSArray* needs) {
+    NSMutableArray* alltrees = getAllNodesOfProxy(needs);
+    int count = [alltrees count];
+    NSMutableArray* indexes = [[NSMutableArray alloc] initWithCapacity:count];
+    
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < count; j++) {
+            if (i != j) {
+                if([[alltrees objectAtIndex:j] containsObject:[[alltrees objectAtIndex:i] objectAtIndex:0]] ) {
+                    [indexes addObject:[NSNumber numberWithInt:i]];
+                    continue;
+                }
+            }
+        }
+    }
+    
+    for(int i = 0; i < [indexes count]; i++) {
+        int tmp = [[indexes objectAtIndex:i] integerValue];
+        for (int j = 0; j < [indexes count]; j++) {
+            if (i != j) {
+                if([[indexes objectAtIndex:j] integerValue] == tmp) {
+                    [indexes removeObjectAtIndex:j];
+                }
+            }
+        }
+    }
+    
+    NSMutableIndexSet* indexSet = [[NSMutableIndexSet alloc] init];
+    for (NSNumber* num in indexes) {
+        [indexSet addIndex:[num integerValue]];
+    }
+    [alltrees removeObjectsAtIndexes:indexSet];
+    [indexes removeAllObjects];
+    
+    for(NSMutableArray* a in alltrees) {
+        //借用indexes，节省初始化时间。
+        [indexes addObject:[a objectAtIndex:0]];
+    }
+    
+    [alltrees release];
+    
+    return indexes;
+}
+
+
 void performLayoutRefresh(CFRunLoopTimerRef timer, void *info)
 {
 	NSArray* localLayoutArray = nil;
@@ -27,7 +95,7 @@ void performLayoutRefresh(CFRunLoopTimerRef timer, void *info)
 	pthread_mutex_lock(&layoutMutex);
 	localLayoutArray = layoutArray;
 	layoutArray = nil;
-
+    
 	if ((layoutTimer != NULL) && ([localLayoutArray count]==0))
 	{
 		//Might as well stop the timer for now.
@@ -35,14 +103,28 @@ void performLayoutRefresh(CFRunLoopTimerRef timer, void *info)
 		CFRelease(layoutTimer);
 		layoutTimer = NULL;
 	}
-
+    
 	pthread_mutex_unlock(&layoutMutex);
+    
+    
+    /*
+     
+     david need to modify
+     2013-1-21
+     
+     */
+    
+    NSLog(@"array size before optimization --> %d", [localLayoutArray count]);
+    
+    localLayoutArray = isInSameTree(localLayoutArray);
+    
+    NSLog(@"array size after optimization --> %d", [localLayoutArray count]);
 	
 	for (TiViewProxy *thisProxy in localLayoutArray)
 	{
         [TiLayoutQueue layoutProxy:thisProxy];
 	}
-		
+    
 	RELEASE_TO_NIL(localLayoutArray);
 }
 

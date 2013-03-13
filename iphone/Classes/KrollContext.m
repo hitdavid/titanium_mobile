@@ -1,8 +1,10 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ * 
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 #import "TiBase.h"
 #import "KrollContext.h"
@@ -625,7 +627,13 @@ static TiValueRef StringFormatDecimalCallback (TiContextRef jsContext, TiObjectR
 	if (exception!=NULL)
 	{
 		id excm = [KrollObject toID:context value:exception];
-		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+		TiScriptError *scriptError = nil;
+		if ([excm isKindOfClass:[NSDictionary class]]) {
+			scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+		} else {
+			scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:[sourceURL absoluteString] lineNo:0];
+		}
+		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
         pthread_mutex_unlock(&KrollEntryLock);
 		@throw excm;
 	}
@@ -641,7 +649,14 @@ static TiValueRef StringFormatDecimalCallback (TiContextRef jsContext, TiObjectR
 	if (exception!=NULL)
 	{
 		id excm = [KrollObject toID:context value:exception];
-		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+		TiScriptError *scriptError = nil;
+		if ([excm isKindOfClass:[NSDictionary class]]) {
+			scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+		} else {
+			scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:[sourceURL absoluteString] lineNo:0];
+		}
+		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
+        
         pthread_mutex_unlock(&KrollEntryLock);
 		@throw excm;
 	}
@@ -850,7 +865,7 @@ static TiValueRef StringFormatDecimalCallback (TiContextRef jsContext, TiObjectR
 {
 	if (stopped!=YES)
 	{
-		@throw [NSException exceptionWithName:@"org.appcelerator.kroll" 
+		@throw [NSException exceptionWithName:@"org.gaea.kroll" 
 									   reason:@"already started"
 									 userInfo:nil];
 	}
@@ -1044,20 +1059,52 @@ static TiValueRef StringFormatDecimalCallback (TiContextRef jsContext, TiObjectR
 	[condition unlock];
 }
 
+void doGC() {
+    
+    if(GCQueue == NULL) {
+        GCQueue = dispatch_queue_create("GCQueue", NULL);
+    }
+    if (GCQueueTimer != NULL)
+	{
+		//Might as well stop the timer for now.
+		CFRunLoopTimerInvalidate(GCQueueTimer);
+		CFRelease(GCQueueTimer);
+		GCQueueTimer = NULL;
+        
+        dispatch_async(GCQueue, ^{
+            NSAutoreleasePool * garbagePool = [[NSAutoreleasePool alloc] init];
+            //pthread_mutex_lock(&KrollEntryLock);
+            TiGarbageCollect(NULL);
+            //pthread_mutex_unlock(&KrollEntryLock);
+            [garbagePool drain];
+        });
+	}
+    
+}
+
 -(int)forceGarbageCollectNow
 {
 	NSAutoreleasePool * garbagePool = [[NSAutoreleasePool alloc] init];
 #if CONTEXT_DEBUG == 1	
 	NSLog(@"[DEBUG] CONTEXT<%@>: forced garbage collection requested",self);
 #endif
-	pthread_mutex_lock(&KrollEntryLock);
-	TiGarbageCollect(context);
-	pthread_mutex_unlock(&KrollEntryLock);
+    
+    if (GCQueueTimer == NULL)
+	{
+        CFRunLoopTimerContext doGCcontext = {0, context, NULL, NULL, NULL};
+		GCQueueTimer = CFRunLoopTimerCreate(NULL,
+                                           CFAbsoluteTimeGetCurrent()+5,
+                                           5, 0, 0, doGC, &doGCcontext);
+		CFRunLoopAddTimer(CFRunLoopGetMain(), GCQueueTimer, kCFRunLoopCommonModes);
+	}
+    
 	gcrequest = NO;
 	loopCount = 0;
 	[garbagePool drain];
 	return 0;
 }
+
+
 
 -(void)main
 {

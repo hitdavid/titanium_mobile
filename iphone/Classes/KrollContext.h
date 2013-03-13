@@ -1,8 +1,10 @@
 /**
  * Appcelerator Titanium Mobile
- * Copyright (c) 2009-2010 by Appcelerator, Inc. All Rights Reserved.
+ * Copyright (c) 2009-2013 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
+ * 
+ * WARNING: This is generated code. Modify at your own risk and without support.
  */
 #import <Foundation/Foundation.h>
 #import "TiCore.h"
@@ -11,6 +13,9 @@
 
 @class KrollContext;
 @class KrollCallback;
+
+static dispatch_queue_t GCQueue;
+CFRunLoopTimerRef GCQueueTimer;
 
 @protocol KrollDelegate <NSObject>
 
@@ -47,6 +52,8 @@
 	NSRecursiveLock *timerLock;
 	void *debugger;
 	id cachedThreadId;
+
+    
 }
 
 @property(nonatomic,readwrite,assign) id<KrollDelegate> delegate;
@@ -78,6 +85,10 @@
 -(void)unregisterTimer:(double)timerId;
 
 -(int)forceGarbageCollectNow;
+-(void) doGC;
+
+
+
 -(NSString*)threadName;
 
 @end
@@ -146,7 +157,6 @@
 -(void)setExecutionContext:(id<KrollDelegate>)delegate;
 @end
 
-//Todo: Move out of being inline and refactor out constantly creating and removing the Kroll string. --BTH
 TI_INLINE KrollContext* GetKrollContext(TiContextRef context)
 {
 	static const char *krollNS = "Kroll";
@@ -154,8 +164,7 @@ TI_INLINE KrollContext* GetKrollContext(TiContextRef context)
 	TiObjectRef global = TiContextGetGlobalObject(globalContext); 
 	TiStringRef string = TiStringCreateWithUTF8CString(krollNS);
 	TiValueRef value = TiObjectGetProperty(globalContext, global, string, NULL);
-//Yes, the __bridge gives a warning when not in ARC. This is why this should not be inline anymore.
-	KrollContext *ctx = (__bridge KrollContext*)TiObjectGetPrivate(TiValueToObject(globalContext, value, NULL));
+	KrollContext *ctx = (KrollContext*)TiObjectGetPrivate(TiValueToObject(globalContext, value, NULL));
 	TiStringRelease(string);
 	return ctx;
 }

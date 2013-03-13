@@ -560,12 +560,16 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	 */
 	public void setProperty(String name, Object value)
 	{
+		Log.i("setProperty", name);
 		properties.put(name, value);
 
 		if (KrollRuntime.getInstance().isRuntimeThread()) {
+			Log.i("setProperty", "doSetpropertity in runtime thread");
 			doSetProperty(name, value);
 
 		} else {
+
+			Log.i("setProperty", "doSetpropertity not in runtime thread");
 			Message message = getRuntimeHandler().obtainMessage(MSG_SET_PROPERTY, value);
 			message.getData().putString(PROPERTY_NAME, name);
 			message.sendToTarget();
@@ -696,14 +700,20 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 
 	public void firePropertyChanged(String name, Object oldValue, Object newValue)
 	{
+		Log.i("firePropertyChanged", name);
 		if (modelListener != null) {
 			if (TiApplication.isUIThread()) {
+				Log.i("firePropertyChanged in UI", "before calling");
 				modelListener.propertyChanged(name, oldValue, newValue, this);
 
 			} else {
+				Log.i("firePropertyChanged in non UI", "before calling");
 				KrollPropertyChange pch = new KrollPropertyChange(name, oldValue, newValue);
 				getMainHandler().obtainMessage(MSG_MODEL_PROPERTY_CHANGE, pch).sendToTarget();
 			}
+		}
+		else {
+			Log.i("firePropertyChanged", "exit when modelListener is null");
 		}
 	}
 
@@ -763,12 +773,21 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	 */
 	public void setPropertyAndFire(String name, Object value)
 	{
+		Log.i("setPropertyAndFire", name);
+				
 		Object current = getProperty(name);
 		setProperty(name, value);
 
 		if (shouldFireChange(current, value)) {
 			firePropertyChanged(name, current, value);
 		}
+		//david 2013-1-14
+		//add for flex
+		if(name.equals(TiC.PROPERTY_FLEX)) {
+			Log.i("setPropertyAndFire", "begin");
+			//firePropertyChanged(name, null, value);
+		}
+		
 	}
 
 	public void onPropertyChanged(String name, Object value)

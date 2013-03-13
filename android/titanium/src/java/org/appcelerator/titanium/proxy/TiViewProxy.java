@@ -30,6 +30,7 @@ import org.appcelerator.titanium.util.TiAnimationBuilder;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiUrl;
 import org.appcelerator.titanium.view.TiAnimation;
+import org.appcelerator.titanium.view.TiCompositeLayout.LayoutParams;
 import org.appcelerator.titanium.view.TiUIView;
 
 import android.app.Activity;
@@ -359,6 +360,43 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	public void setHeight(Object height)
 	{
 		setPropertyAndFire(TiC.PROPERTY_HEIGHT, height);
+	}
+	
+
+	/*
+	 * add by david 2013-1-11
+	 * support flex layout
+	 */
+	@Kroll.setProperty(retain=true) 
+	@Kroll.method
+	public void setFlex(Object flex)
+	{
+		this.setProperty(TiC.PROPERTY_FLEX, (Integer)flex);
+		Log.i("setFlex", flex.getClass().toString());
+		if(this.view == null) {
+			this.view = getOrCreateView(true);
+		}
+		
+		if(this.view != null) {
+			Log.i("setting FLEX propertity when view is not null", "begin");
+			LayoutParams lp = (LayoutParams)this.view.getLayoutParams();
+			lp.flex = new TiDimension((Integer)flex, TiDimension.TYPE_FLEX);
+			this.view.propertyChanged(TiC.PROPERTY_FLEX, null, (Integer)flex, this);
+		}
+		Log.i("setting FLEX propertity", "begin");
+		setPropertyAndFire(TiC.PROPERTY_FLEX, flex);
+	}
+	
+	@Kroll.getProperty 
+	@Kroll.method
+	public Object getFlex()
+	{
+		Log.i("getting FLEX propertity", "begin");
+		if (hasProperty(TiC.PROPERTY_FLEX)) {
+			return getProperty(TiC.PROPERTY_FLEX);
+		}
+
+		return KrollRuntime.UNDEFINED;
 	}
 
 	@Kroll.getProperty @Kroll.method
