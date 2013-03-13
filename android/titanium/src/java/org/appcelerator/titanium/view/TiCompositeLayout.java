@@ -358,6 +358,14 @@ public class TiCompositeLayout extends ViewGroup
 //		int measuredWidth = getMeasuredWidth(maxWidth, widthMeasureSpec);
 //		int measuredHeight = getMeasuredHeight(maxHeight,heightMeasureSpec);
 //		setMeasuredDimension(measuredWidth, measuredHeight);
+//		
+		
+		
+		
+		
+		
+		
+		
 		if(proxy.get() != null) {
 			if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
 				android.util.Log.d("On measure ! ", (String)proxy.get().getProperty(TiC.PROPERTY_ID) );
@@ -465,12 +473,12 @@ public class TiCompositeLayout extends ViewGroup
 						android.util.Log.d("this flex is ", new Float(params.flex.getValue()).toString());
 					}
 				}
-				if (params.optionLeft != null) {
-					HMargins += params.optionLeft.getIntValue();
-				}
-				if (params.optionRight != null) {
-					HMargins += params.optionRight.getIntValue();
-				}
+//				if (params.optionLeft != null) {
+//					HMargins += params.optionLeft.getIntValue();
+//				}
+//				if (params.optionRight != null) {
+//					HMargins += params.optionRight.getIntValue();
+//				}
 			}
 			else {
 				if (params.flex != null && params.optionHeight == null) { 
@@ -480,12 +488,12 @@ public class TiCompositeLayout extends ViewGroup
 						android.util.Log.d("this flex is ", new Float(params.flex.getValue()).toString());
 					}
 				}
-					if (params.optionTop != null) {
-						VMargins += params.optionTop.getIntValue();
-					}
-					if (params.optionBottom != null) {
-						VMargins += params.optionBottom.getIntValue();
-					}
+//					if (params.optionTop != null) {
+//						VMargins += params.optionTop.getIntValue();
+//					}
+//					if (params.optionBottom != null) {
+//						VMargins += params.optionBottom.getIntValue();
+//					}
 
 			}
 		}
@@ -530,16 +538,16 @@ public class TiCompositeLayout extends ViewGroup
 					//((TiView)child).setMeasuredDimension(childCalcWidth, measuredHeight);
 					constrainChild(child, childCalcWidth, wMode, measuredHeight, hMode);
 				}
-				else if(params.flex == null && params.optionWidth != null) {
-					//eg: width=2
-					//((TiView)child).setMeasuredDimension(params.optionWidth.getIntValue(), measuredHeight);
-					constrainChild(child, params.optionWidth.getIntValue(), wMode, measuredHeight, hMode);
-				}
-				else {
-					//eg: null property
-					//((TiView)child).setMeasuredDimension(w, h);
-					constrainChild(child, w, wMode, h, hMode);
-				}
+//				else if(params.flex == null && params.optionWidth != null) {
+//					//eg: width=2
+//					//((TiView)child).setMeasuredDimension(params.optionWidth.getIntValue(), measuredHeight);
+//					constrainChild(child, params.optionWidth.getIntValue(), wMode, measuredHeight, hMode);
+//				}
+//				else {
+//					//eg: null property
+//					//((TiView)child).setMeasuredDimension(w, h);
+//					constrainChild(child, maxWidth, wMode, maxHeight, hMode);
+//				}
 			}
 			else {
 				if(params.flex != null && params.optionHeight == null) {
@@ -548,16 +556,16 @@ public class TiCompositeLayout extends ViewGroup
 					//((TiView)child).setMeasuredDimension(measuredWidth, childCalcHeight);
 					constrainChild(child, measuredWidth, wMode, childCalcHeight, hMode);
 				}
-				else if(params.flex == null && params.optionHeight != null) {
-					//eg: width=2
-					//((TiView)child).setMeasuredDimension(measuredWidth, params.optionHeight.getIntValue());
-					constrainChild(child, measuredWidth, wMode, params.optionHeight.getIntValue(), hMode);
-				}
-				else {
-					//eg: null property
-					//((TiView)child).setMeasuredDimension(w, h);
-					constrainChild(child, w, wMode, h, hMode);
-				}
+//				else if(params.flex == null && params.optionHeight != null) {
+//					//eg: width=2
+//					//((TiView)child).setMeasuredDimension(measuredWidth, params.optionHeight.getIntValue());
+//					constrainChild(child, measuredWidth, wMode, params.optionHeight.getIntValue(), hMode);
+//				}
+//				else {
+//					//eg: null property
+//					//((TiView)child).setMeasuredDimension(w, h);
+//					constrainChild(child, maxWidth, wMode, maxHeight, hMode);
+//				}
 			}
 		}
 		
@@ -582,7 +590,8 @@ public class TiCompositeLayout extends ViewGroup
 		} else {
 			if (p.autoFillsWidth) {
 				childDimension = LayoutParams.FILL_PARENT;
-			} else {
+			} 
+			else {
 				// Look for sizeFill conflicts
 				hasSizeFillConflict(child, sizeFillConflicts, true);
 				checkedForConflict = true;
@@ -806,7 +815,111 @@ public class TiCompositeLayout extends ViewGroup
 		TiViewProxy viewProxy = (proxy == null ? null : proxy.get());
 		TiUIHelper.firePostLayoutEvent(viewProxy);
 
-	}
+//		
+//		if(proxy.get() != null) {
+//			if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
+//				android.util.Log.d("On Layout ! ", (String)proxy.get().getProperty(TiC.PROPERTY_ID) );
+//			}
+//			else {
+//				android.util.Log.d("On Layout ! ", "no ID" );
+//			}
+//		}
+//		
+//		android.util.Log.d("l ==>", new Integer(l).toString());
+//		android.util.Log.d("t ==>", new Integer(t).toString());
+//		android.util.Log.d("r ==>", new Integer(r).toString());
+//		android.util.Log.d("b ==>", new Integer(b).toString());
+//
+//		int count = getChildCount();
+//
+//		String str = String.format("%d", count);
+//		android.util.Log.d("onLayout child count is ", str);
+//
+//		int left = 0;
+//		int top = 0;
+//		int right = r - l;
+//		int bottom = b - t;
+//
+//		double sumFlex = 0.0f;
+//		ArrayList<TiCompositeLayout.LayoutParams> offsetValues = new ArrayList<TiCompositeLayout.LayoutParams>();
+//
+//		if (needsSort) {
+//			viewSorter.clear();
+//			if (count > 1) { // No need to sort one item.
+//				for (int i = 0; i < count; i++) {
+//					View child = getChildAt(i);
+//					TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
+//					params.index = i;
+//					viewSorter.add(child);
+//				}
+//
+//				detachAllViewsFromParent();
+//				int i = 0;
+//				for (View child : viewSorter) {
+//					attachViewToParent(child, i++, child.getLayoutParams());
+//				}
+//			}
+//			needsSort = false;
+//		}
+//		// viewSorter is not needed after this. It's a source of
+//		// memory leaks if it retains the views it's holding.
+//		viewSorter.clear();
+//		
+//		
+//		int marginTop = 0;
+//		int marginLeft = 0;
+//		int marginRight = 0;
+//		int marginBottom = 0;
+//		int lastRight = 0;
+//		int lastBottom = 0;
+//		
+//		
+//		for (int i = 0; i < count; i++) {
+//			View child = getChildAt(i);
+//			android.util.Log.d("this child is ", child.getClass().getName());
+//			TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
+//			
+//			if (params.marginTop != null) {
+//				marginTop = params.marginTop.getIntValue();
+//			} else {
+//				marginTop = 0;
+//			}
+//			if (params.marginLeft != null) {
+//				marginLeft = params.marginLeft.getIntValue();
+//			} else {
+//				marginLeft = 0;
+//			}
+//			if (params.marginRight != null) {
+//				marginRight = params.marginRight.getIntValue();
+//			} else {
+//				marginRight = 0;
+//			}
+//			if (params.marginBottom != null) {
+//				marginBottom = params.marginBottom.getIntValue();
+//			} else {
+//				marginBottom = 0;
+//			}
+//			android.util.Log.d("marginTop ==>", new Integer(marginTop).toString());
+//			android.util.Log.d("marginLeft ==>", new Integer(marginLeft).toString());
+//			android.util.Log.d("marginRight ==>", new Integer(marginRight).toString());
+//			android.util.Log.d("marginBottom ==>", new Integer(marginBottom).toString());
+//			
+//			child.layout(lastRight + marginLeft, 
+//					lastBottom + marginTop, 
+//					lastRight + marginLeft + child.getMeasuredWidth(), 
+//					lastBottom + marginTop + child.getMeasuredHeight());
+//			
+//			if (isHorizontalArrangement()) {
+//				lastRight = lastRight + child.getMeasuredWidth() + marginLeft + marginRight;
+//			} else {
+//				lastBottom = lastBottom + child.getMeasuredHeight() + marginTop + marginBottom;
+//			}
+//			
+//		}
+//
+//		TiViewProxy viewProxy = (proxy == null ? null : proxy.get());
+//		TiUIHelper.firePostLayoutEvent(viewProxy);
+}
 
 	// option0 is left/top, option1 is right/bottom
 	public static void computePosition(View parent, TiDimension leftOrTop, TiDimension optionCenter, TiDimension rightOrBottom,
