@@ -136,7 +136,8 @@ extern NSString * const TI_APPLICATION_ID;
 	TiModule *m = [modules objectForKey:name];
 	if (m == nil || [m destroyed]) // Need to re-allocate any modules which have been destroyed
 	{
-		@synchronized(self)
+//        TODO: SYQ
+//		@synchronized(self)
 		{
 			m = [modules objectForKey:name];
 			if (m == nil || [m destroyed])

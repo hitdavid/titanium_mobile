@@ -484,9 +484,9 @@ DEFINE_EXCEPTIONS
 -(void)renderRepeatedBackground:(id)image
 {
     if (![NSThread isMainThread]) {
-        TiThreadPerformOnMainThread(^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             [self renderRepeatedBackground:image];
-        }, NO);
+        });
         return;
     }
     
@@ -1106,6 +1106,7 @@ DEFINE_EXCEPTIONS
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    [self updateTouchHandling];    //add by SYQ
     if ([[event touchesForView:self] count] > 0 || [self touchedContentViewWithEvent:event]) {
         [self processTouchesBegan:touches withEvent:event];
     }
@@ -1125,6 +1126,19 @@ DEFINE_EXCEPTIONS
 		{
 			[proxy fireEvent:@"touchstart" withObject:evt propagate:YES];
 			[self handleControlEvents:UIControlEventTouchDown];
+		}
+        // Click handling is special; don't propagate if we have a delegate,
+        // but DO invoke the touch delegate.
+		// clicks should also be handled by any control the view is embedded in.
+		if ([touch tapCount] == 1 && [proxy _hasListeners:@"click"])
+		{
+			if (touchDelegate == nil) {
+				[proxy fireEvent:@"click" withObject:evt propagate:YES];
+				return;
+			} 
+		} else if ([touch tapCount] == 2 && [proxy _hasListeners:@"dblclick"]) {
+			[proxy fireEvent:@"dblclick" withObject:evt propagate:YES];
+			return;
 		}
 	}
 }
@@ -1170,20 +1184,6 @@ DEFINE_EXCEPTIONS
 		{
 			[proxy fireEvent:@"touchend" withObject:evt propagate:YES];
 			[self handleControlEvents:UIControlEventTouchCancel];
-		}
-        
-		// Click handling is special; don't propagate if we have a delegate,
-		// but DO invoke the touch delegate.
-		// clicks should also be handled by any control the view is embedded in.
-		if ([touch tapCount] == 1 && [proxy _hasListeners:@"click"])
-		{
-			if (touchDelegate == nil) {
-				[proxy fireEvent:@"click" withObject:evt propagate:YES];
-				return;
-			}
-		} else if ([touch tapCount] == 2 && [proxy _hasListeners:@"dblclick"]) {
-			[proxy fireEvent:@"dblclick" withObject:evt propagate:YES];
-			return;
 		}
 	}
 }

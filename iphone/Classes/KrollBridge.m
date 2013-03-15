@@ -18,6 +18,8 @@
 #import "TiDebugger.h"
 #import "TiConsole.h"
 #import "TiExceptionHandler.h"
+#import "TiUIViewProxy.h"
+#import "TiUIView.h"
 
 #ifdef KROLL_COVERAGE
 # include "KrollCoverage.h"
@@ -26,13 +28,13 @@
 extern BOOL const TI_APPLICATION_ANALYTICS;
 extern NSString * const TI_APPLICATION_DEPLOYTYPE;
 
-NSString * TitaniumModuleRequireFormat = @"(function(exports){"
+NSString * Gaea$ModuleRequireFormat = @"(function(exports){"
 		"var __OXP=exports;var module={'exports':exports};%@;\n"
 		"if(module.exports !== __OXP){return module.exports;}"
 		"return exports;})({})";
 
 
-@implementation TitaniumObject
+@implementation GaeaObject
 
 -(NSDictionary*)modules
 {
@@ -453,8 +455,14 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 	}
 	if (exception != NULL) {
 		id excm = [KrollObject toID:context value:exception];
+		TiScriptError *scriptError = nil;
+		if ([excm isKindOfClass:[NSDictionary class]]) {
+			scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+		} else {
+			scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:path lineNo:0];
+		}
 		evaluationError = YES;
-		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
 	}
 	
 	TiStringRelease(jsCode);
@@ -528,7 +536,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 -(void)gc
 {
 	[context gc];
-	[titanium gc];
+	[_gaea gc];
 }
 
 #pragma mark Delegate
@@ -540,18 +548,18 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 
 -(void)didStartNewContext:(KrollContext*)kroll
 {
-	// create Titanium global object
+	// create Gaea global object
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     
-    // Load the "Titanium" object into the global scope
+    // Load the "Gaea" object into the global scope
 	NSString *basePath = (url==nil) ? [TiHost resourcePath] : [[[url path] stringByDeletingLastPathComponent] stringByAppendingPathComponent:@"."];
-	titanium = [[TitaniumObject alloc] initWithContext:kroll host:host context:self baseURL:[NSURL fileURLWithPath:basePath]];
+	_gaea = [[GaeaObject alloc] initWithContext:kroll host:host context:self baseURL:[NSURL fileURLWithPath:basePath]];
 	
 	TiContextRef jsContext = [kroll context];
-	TiValueRef tiRef = [KrollObject toValue:kroll value:titanium];
+	TiValueRef tiRef = [KrollObject toValue:kroll value:_gaea];
 	
-	NSString *titaniumNS = [NSString stringWithFormat:@"T%sanium","it"];
-	TiStringRef prop = TiStringCreateWithCFString((CFStringRef) titaniumNS);
+	NSString *_gaeaNS = [NSString stringWithFormat:@"T%sanium","it"];
+	TiStringRef prop = TiStringCreateWithCFString((CFStringRef) _gaeaNS);
 	TiStringRef prop2 = TiStringCreateWithCFString((CFStringRef) [NSString stringWithFormat:@"%si","T"]);
 	TiObjectRef globalRef = TiContextGetGlobalObject(jsContext);
 	TiObjectSetProperty(jsContext, globalRef, prop, tiRef,
@@ -573,7 +581,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 	{
 		for (NSString *name in preload)
 		{
-			KrollObject *ti = (KrollObject*)[titanium valueForKey:name];
+			KrollObject *ti = (KrollObject*)[_gaea valueForKey:name];
 			NSDictionary *values = [preload valueForKey:name];
 			for (id key in values)
 			{
@@ -609,7 +617,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 		NSNotification *notification = [NSNotification notificationWithName:kTiContextShutdownNotification object:self];
 		[[NSNotificationCenter defaultCenter] postNotification:notification];
 	}
-	[titanium gc];
+	[_gaea gc];
 	
 	if (shutdownCondition)
 	{
@@ -624,7 +632,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 {
 	TiThreadPerformOnMainThread(^{[self unregisterForMemoryWarning];}, NO);
 	[self removeProxies];
-	RELEASE_TO_NIL(titanium);
+	RELEASE_TO_NIL(_gaea);
     RELEASE_TO_NIL(console);
 	RELEASE_TO_NIL(context);
 	RELEASE_TO_NIL(preload);
@@ -713,7 +721,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 
 -(id)loadCommonJSModule:(NSString*)code withSourceURL:(NSURL *)sourceURL
 {
-	NSString *js = [[NSString alloc] initWithFormat:TitaniumModuleRequireFormat,code];
+	NSString *js = [[NSString alloc] initWithFormat:Gaea$ModuleRequireFormat,code];
 
 	/* This most likely should be integrated with normal code flow, but to
 	 * minimize impact until a in-depth reconsideration of KrollContext can be
@@ -727,7 +735,13 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 	
 	if (exception != NULL) {
 		id excm = [KrollObject toID:context value:exception];
-		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+		TiScriptError *scriptError = nil;
+		if ([excm isKindOfClass:[NSDictionary class]]) {
+			scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+		} else {
+			scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:[sourceURL absoluteString] lineNo:0];
+		}
+		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
 		return nil;
 	}
 	/*
@@ -770,9 +784,14 @@ CFMutableSetRef	krollBridgeRegistry = nil;
     //
     // TODO: This violates commonjs 1.1 and there is some ongoing discussion about whether or not
     // it should make a path absolute.
+    NSRange separatorLocation = [path rangeOfString:@"/"];
     NSString* workingPath = [oldURL relativePath];
-	fullPath = [path hasPrefix:@"/"]?[path substringFromIndex:1]:path;
-
+    if (separatorLocation.location == 0) {
+        fullPath = [path substringFromIndex:1];
+    }
+    else {
+        fullPath = path;
+    }
     NSString* moduleID = nil;
     NSString* leadingComponent = [[fullPath pathComponents] objectAtIndex:0];
     BOOL isAbsolute = !([leadingComponent isEqualToString:@"."] || [leadingComponent isEqualToString:@".."]);
@@ -800,7 +819,7 @@ CFMutableSetRef	krollBridgeRegistry = nil;
 		}
 	}
 
-    NSRange separatorLocation = [fullPath rangeOfString:@"/"];
+    separatorLocation = [fullPath rangeOfString:@"/"];
     NSString* moduleClassName = [self pathToModuleClassName:moduleID];
     Class moduleClass = NSClassFromString(moduleClassName);
 
@@ -848,7 +867,7 @@ loadNativeJS:
         if (data == nil && isAbsolute) {
             // We may have an absolute URL which tried to load from a module instead of a directory. Fix
             // the fullpath back to the right value, so we can try again.
-			fullPath = [path hasPrefix:@"/"]?[path substringFromIndex:1]:path;
+            fullPath = [path substringFromIndex:1];
         }
         else if (data != nil) {
             // Set the current URL; it should be the fullPath relative to the host's base URL.
@@ -893,7 +912,7 @@ loadNativeJS:
         
 		if (![wrapper respondsToSelector:@selector(replaceValue:forKey:notification:)]) {
             [self setCurrentURL:oldURL];
-			@throw [NSException exceptionWithName:@"org.appcelerator.kroll" 
+			@throw [NSException exceptionWithName:@"org.gaea.kroll" 
                                            reason:[NSString stringWithFormat:@"Module \"%@\" failed to leave a valid exports object",path] 
                                          userInfo:nil];
 		}
@@ -942,7 +961,7 @@ loadNativeJS:
 		return module;
 	}
 	
-	@throw [NSException exceptionWithName:@"org.appcelerator.kroll" reason:[NSString stringWithFormat:@"Couldn't find module: %@",path] userInfo:nil];
+	@throw [NSException exceptionWithName:@"org.gaea.kroll" reason:[NSString stringWithFormat:@"Couldn't find module: %@",path] userInfo:nil];
 }
 
 + (NSArray *)krollBridgesUsingProxy:(id)proxy

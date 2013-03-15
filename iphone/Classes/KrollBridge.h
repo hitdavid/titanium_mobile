@@ -17,9 +17,9 @@
 
 #ifdef KROLL_COVERAGE
 # import "KrollCoverage.h"
-@interface TitaniumObject : KrollCoverageObject {
+@interface GaeaObject : KrollCoverageObject {
 #else
-@interface TitaniumObject : KrollObject {
+@interface GaeaObject : KrollObject {
 #endif
 @private
 	NSMutableDictionary *modules;
@@ -33,7 +33,7 @@
 -(TiModule*)moduleNamed:(NSString*)name context:(id<TiEvaluator>)context;
 @end
 
-extern NSString * TitaniumModuleRequireFormat;
+extern NSString * Gaea$ModuleRequireFormat;
 
 @interface KrollBridge : Bridge<TiEvaluator,KrollDelegate> {
 @private
@@ -42,7 +42,7 @@ extern NSString * TitaniumModuleRequireFormat;
 	KrollContext *context;
 	NSDictionary *preload;
 	NSMutableDictionary *modules;
-	TitaniumObject *titanium;
+	GaeaObject *_gaea;
     KrollObject* console;
 	BOOL shutdown;
     BOOL evaluationError;

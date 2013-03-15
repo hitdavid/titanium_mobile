@@ -191,6 +191,8 @@ TiValueRef KrollGetProperty(TiContextRef jsContext, TiObjectRef object, TiString
 			return NULL;
 		}
         
+        NSString* name = (NSString*)TiStringCopyCFString(kCFAllocatorDefault, prop);
+//        NSLog(@"KrollGetProperty %@", name);
         // Attempt to retrieve the property from the exports, before going through
         // the routing
         TiObjectRef exports = [o objectForTiString:kTiStringExportsKey context:jsContext];
@@ -199,8 +201,8 @@ TiValueRef KrollGetProperty(TiContextRef jsContext, TiObjectRef object, TiString
         }
         
 		
-		NSString* name = (NSString*)TiStringCopyCFString(kCFAllocatorDefault, prop);
-		[name autorelease];		
+//		NSString* name = (NSString*)TiStringCopyCFString(kCFAllocatorDefault, prop);
+		[name autorelease];
 
 		id result = [o valueForKey:name];
 		TiObjectRef cachedObject = [o objectForTiString:prop context:jsContext];
@@ -300,10 +302,10 @@ bool KrollSetProperty(TiContextRef jsContext, TiObjectRef object, TiStringRef pr
 
 // forward declare these
 
-//@interface TitaniumObject : NSObject
+//@interface GaeaObject : NSObject
 //@end
 
-@interface TitaniumObject (Private)
+@interface GaeaObject (Private)
 -(NSDictionary*)modules;
 @end
 
@@ -321,9 +323,9 @@ void KrollPropertyNames(TiContextRef ctx, TiObjectRef object, TiPropertyNameAccu
 	{
 		id target = [o target];
 		
-		if ([o isKindOfClass:[TitaniumObject class]])
+		if ([o isKindOfClass:[GaeaObject class]])
 		{
-			for (NSString *key in [[(TitaniumObject*)o modules] allKeys])
+			for (NSString *key in [[(GaeaObject*)o modules] allKeys])
 			{
 				TiStringRef value = TiStringCreateWithUTF8CString([key UTF8String]);
 				TiPropertyNameAccumulatorAddName(propertyNames,value);
@@ -1361,7 +1363,13 @@ TI_INLINE TiStringRef TiStringCreateWithPointerValue(int value)
 		if (exception!=NULL)
 		{
 			id excm = [KrollObject toID:context value:exception];
-			[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+			TiScriptError *scriptError = nil;
+			if ([excm isKindOfClass:[NSDictionary class]]) {
+				scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+			} else {
+				scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:nil lineNo:0];
+			}
+			[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
 		}
 	}
 }

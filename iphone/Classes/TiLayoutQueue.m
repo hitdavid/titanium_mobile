@@ -114,11 +114,11 @@ void performLayoutRefresh(CFRunLoopTimerRef timer, void *info)
      
      */
     
-    NSLog(@"array size before optimization --> %d", [localLayoutArray count]);
+//    NSLog(@"array size before optimization --> %d", [localLayoutArray count]);
     
-    localLayoutArray = isInSameTree(localLayoutArray);
+//    localLayoutArray = isInSameTree(localLayoutArray);
     
-    NSLog(@"array size after optimization --> %d", [localLayoutArray count]);
+//    NSLog(@"array size after optimization --> %d", [localLayoutArray count]);
 	
 	for (TiViewProxy *thisProxy in localLayoutArray)
 	{

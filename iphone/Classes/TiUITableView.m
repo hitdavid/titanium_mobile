@@ -120,34 +120,19 @@
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if ( ([[event touchesForView:self.contentView] count] > 0) || ([[event touchesForView:self.accessoryView] count] > 0) 
-        || ([[event touchesForView:self.imageView] count] > 0) || ([[event touchesForView:self.proxy.currentRowContainerView] count]> 0 )) {
+        || ([[event touchesForView:self.imageView] count] > 0) ) {
         if ([proxy _hasListeners:@"touchstart"])
         {
             [proxy fireEvent:@"touchstart" withObject:[proxy createEventObject:nil] propagate:YES];
         }
     }
-        
     [super touchesBegan:touches withEvent:event];
-}
-
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    if ([[event touchesForView:self.contentView] count] > 0 || ([[event touchesForView:self.accessoryView] count] > 0)
-        || ([[event touchesForView:self.imageView] count] > 0) || ([[event touchesForView:self.proxy.currentRowContainerView] count]> 0 )) {
-        if ([proxy _hasListeners:@"touchmove"])
-        {
-            UITouch *touch = [touches anyObject];
-            NSMutableDictionary *evt = [NSMutableDictionary dictionaryWithDictionary:[TiUtils pointToDictionary:[touch locationInView:self]]];
-            [proxy fireEvent:@"touchmove" withObject:evt propagate:YES];
-        }
-    }
-    [super touchesMoved:touches withEvent:event];
 }
 
 -(void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     if ( ([[event touchesForView:self.contentView] count] > 0) || ([[event touchesForView:self.accessoryView] count] > 0) 
-        || ([[event touchesForView:self.imageView] count] > 0) || ([[event touchesForView:self.proxy.currentRowContainerView] count]> 0 )) {
+        || ([[event touchesForView:self.imageView] count] > 0) ) {
         if ([proxy _hasListeners:@"touchend"])
         {
             [proxy fireEvent:@"touchend" withObject:[proxy createEventObject:nil] propagate:YES];
@@ -190,7 +175,7 @@
 }
 
 
--(void) updateGradientLayer:(BOOL)useSelected withAnimation:(BOOL)animated
+-(void) updateGradientLayer:(BOOL)useSelected
 {
 	TiGradient * currentGradient = useSelected?selectedBackgroundGradient:backgroundGradient;
 
@@ -200,7 +185,7 @@
 		//Because there's the chance that the other state still has the gradient, let's keep it around.
 		return;
 	}
-
+	
 	CALayer * ourLayer = [self layer];
 	
 	if(gradientLayer == nil)
@@ -222,38 +207,31 @@
             [[self textLabel] setBackgroundColor:[UIColor clearColor]];
         }
 	}
-    if (animated) {
-        CABasicAnimation *flash = [CABasicAnimation animationWithKeyPath:@"opacity"];
-        flash.fromValue = [NSNumber numberWithFloat:0.0];
-        flash.toValue = [NSNumber numberWithFloat:1.0];
-        flash.duration = 1.0;
-        [gradientLayer addAnimation:flash forKey:@"flashAnimation"];
-    }
 	[gradientLayer setNeedsDisplay];
 }
 
 -(void)setSelected:(BOOL)yn animated:(BOOL)animated
 {
     [super setSelected:yn animated:animated];
-    [self updateGradientLayer:yn|[self isHighlighted] withAnimation:animated];
+    [self updateGradientLayer:yn|[self isHighlighted]];
 }
 
 -(void)setHighlighted:(BOOL)yn animated:(BOOL)animated
 {
     [super setHighlighted:yn animated:animated];
-    [self updateGradientLayer:yn|[self isSelected] withAnimation:animated];
+    [self updateGradientLayer:yn|[self isSelected]];
 }
 
 -(void)setHighlighted:(BOOL)yn
 {
     [super setHighlighted:yn];
-    [self updateGradientLayer:yn|[self isSelected] withAnimation:NO];
+    [self updateGradientLayer:yn|[self isHighlighted]];
 }
 
 -(void)setSelected:(BOOL)yn
 {
     [super setSelected:yn];
-    [self updateGradientLayer:yn|[self isHighlighted] withAnimation:NO];
+    [self updateGradientLayer:yn|[self isHighlighted]];
 }
 
 -(void) setBackgroundGradient_:(TiGradient *)newGradient
@@ -267,7 +245,7 @@
 	
 	if(![self selectedOrHighlighted])
 	{
-		[self updateGradientLayer:NO withAnimation:NO];
+		[self updateGradientLayer:NO];
 	}
 }
 
@@ -282,7 +260,7 @@
 	
 	if([self selectedOrHighlighted])
 	{
-		[self updateGradientLayer:YES withAnimation:NO];
+		[self updateGradientLayer:YES];
 	}
 }
 
@@ -463,9 +441,14 @@
     // way, meaning that we have to explicitly reload the whole visible table to get
     // the "right" behavior.
     if (animation == UITableViewRowAnimationNone) {
-		TiThreadPerformOnMainThread(^{
-			[table reloadData];
-		}, NO);
+        if (![NSThread isMainThread]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [table reloadData];
+            });
+        }
+        else {
+            [table reloadData];            
+        }
         return;
     }
     
@@ -1676,9 +1659,14 @@
 
     // Instead of calling back through our mechanism to reload specific sections, because the entire index of the table
     // has been regenerated, we can assume it's okay to just reload the whole dataset.
-	TiThreadPerformOnMainThread(^{
-		[[self tableView] reloadData];
-	}, NO);
+    if ([NSThread isMainThread]) {
+        [[self tableView] reloadData];
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[self tableView] reloadData];
+        });
+    }
 }
 
 -(void)setFilterCaseInsensitive_:(id)caseBool

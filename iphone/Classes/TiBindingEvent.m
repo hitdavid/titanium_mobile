@@ -14,7 +14,6 @@
 #import "TiBindingRunLoop.h"
 #import "TiBase.h"
 #import "TiExceptionHandler.h"
-#import "TiUtils.h"
 
 extern TiStringRef kTiStringLength;
 
@@ -132,6 +131,9 @@ void TiBindingEventFire(TiBindingEvent event)
 	}
 	
 	int runloopcount = [targetProxy bindingRunLoopCount];
+    //TODO: SYQ
+    if (runloopcount == 0)
+        runloopcount = 1;
 
 	if(event->targetProxy!=targetProxy){
 		[event->targetProxy release];
@@ -221,7 +223,13 @@ void TiBindingEventProcess(TiBindingRunLoop runloop, void * payload)
 			if (exception!=NULL)
 			{
 				id excm = TiBindingTiValueToNSObject(context, exception);
-				[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+				TiScriptError *scriptError = nil;
+				if ([excm isKindOfClass:[NSDictionary class]]) {
+					scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+				} else {
+					scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:nil lineNo:0];
+				}
+				[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
 			}
 			
 			// Note cancel bubble

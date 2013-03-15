@@ -20,7 +20,7 @@
 #import "Base64Transcoder.h"
 
 extern NSString * const TI_APPLICATION_ID;
-static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._listeners={};Ti.App._listener_id=1;Ti.App.id=Ti.appId;Ti.App._xhr=XMLHttpRequest;"
+static NSString * const kGaeaJavascript = @"Ti.App={};Ti.API={};Ti.App._listeners={};Ti.App._listener_id=1;Ti.App.id=Ti.appId;Ti.App._xhr=XMLHttpRequest;"
 		"Ti._broker=function(module,method,data){try{var url='app://'+Ti.appId+'/_TiA0_'+Ti.pageToken+'/'+module+'/'+method+'?'+Ti.App._JSON(data,1);"
 			"var xhr=new Ti.App._xhr();xhr.open('GET',url,false);xhr.send()}catch(X){}};"
 		"Ti._hexish=function(a){var r='';var e=a.length;var c=0;var h;while(c<e){h=a.charCodeAt(c++).toString(16);r+='\\\\u';var l=4-h.length;while(l-->0){r+='0'};r+=h}return r};"
@@ -34,34 +34,6 @@ static NSString * const kTitaniumJavascript = @"Ti.App={};Ti.API={};Ti.App._list
 			"if(value!==undefined){objects.push(Ti.App._JSON(prop,bridge)+': '+value)}}return'{'+objects.join(',')+'}'};"
 		"Ti.App._dispatchEvent=function(type,evtid,evt){var listeners=Ti.App._listeners[type];if(listeners){for(var c=0;c<listeners.length;c++){var entry=listeners[c];if(entry.id==evtid){entry.callback.call(entry.callback,evt)}}}};Ti.App.fireEvent=function(name,evt){Ti._broker('App','fireEvent',{name:name,event:evt})};Ti.API.log=function(a,b){Ti._broker('API','log',{level:a,message:b})};Ti.API.debug=function(e){Ti._broker('API','log',{level:'debug',message:e})};Ti.API.error=function(e){Ti._broker('API','log',{level:'error',message:e})};Ti.API.info=function(e){Ti._broker('API','log',{level:'info',message:e})};Ti.API.fatal=function(e){Ti._broker('API','log',{level:'fatal',message:e})};Ti.API.warn=function(e){Ti._broker('API','log',{level:'warn',message:e})};Ti.App.addEventListener=function(name,fn){var listeners=Ti.App._listeners[name];if(typeof(listeners)=='undefined'){listeners=[];Ti.App._listeners[name]=listeners}var newid=Ti.pageToken+Ti.App._listener_id++;listeners.push({callback:fn,id:newid});Ti._broker('App','addEventListener',{name:name,id:newid})};Ti.App.removeEventListener=function(name,fn){var listeners=Ti.App._listeners[name];if(listeners){for(var c=0;c<listeners.length;c++){var entry=listeners[c];if(entry.callback==fn){listeners.splice(c,1);Ti._broker('App','removeEventListener',{name:name,id:entry.id});break}}}};";
 
-static NSString * const kMimeTextHTML = @"text/html";
-static NSString * const kContentData = @"kContentData";
-static NSString * const kContentDataEncoding = @"kContentDataEncoding";
-static NSString * const kContentTextEncoding = @"kContentTextEncoding";
-static NSString * const kContentMimeType = @"kContentMimeType";
-static NSString * const kContentInjection = @"kContentInjection";
-
-
-NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
-{
-	if (encoding == NSUTF8StringEncoding) {
-		return @"utf-8";
-	} else if (encoding == NSUTF16StringEncoding) {
-		return @"utf-16";
-	} else if (encoding == NSASCIIStringEncoding) {
-		return @"us-ascii";
-	} else if (encoding == NSISOLatin1StringEncoding) {
-		return @"latin1";
-	} else if (encoding == NSShiftJISStringEncoding) {
-		return @"shift_jis";
-	} else if (encoding == NSWindowsCP1252StringEncoding) {
-		return @"windows-1251";
-	}
-	return nil;
-}
-
-@interface LocalProtocolHandler : NSURLProtocol
-@end
  
 @implementation TiUIWebView
 @synthesize reloadData, reloadDataProperties;
@@ -93,10 +65,10 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 }
 
 
-+ (BOOL)isLocalURL:(NSURL *)url
+-(BOOL)isURLRemote
 {
 	NSString *scheme = [url scheme];
-	return [scheme isEqualToString:@"file"] || [scheme isEqualToString:@"app"];
+	return [scheme hasPrefix:@"http"];
 }
 
 -(UIView*)hitTest:(CGPoint)point withEvent:(UIEvent *)event
@@ -139,13 +111,12 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 		webview.opaque = NO;
 		webview.backgroundColor = [UIColor whiteColor];
 		webview.contentMode = UIViewContentModeRedraw;
-		webview.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
 		[self addSubview:webview];
 
 		BOOL hideLoadIndicator = [TiUtils boolValue:[self.proxy valueForKey:@"hideLoadIndicator"] def:NO];
 		
 		// only show the loading indicator if it's a remote URL and 'hideLoadIndicator' property is not set.
-		if (![[self class] isLocalURL:url] && !hideLoadIndicator)
+		if ([self isURLRemote] && !hideLoadIndicator)
 		{
 			TiColor *bgcolor = [TiUtils colorValue:[self.proxy valueForKey:@"backgroundColor"]];
 			UIActivityIndicatorViewStyle style = UIActivityIndicatorViewStyleGray;
@@ -188,6 +159,7 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
     [super frameSizeChanged:frame bounds:bounds];
 	if (webview!=nil)
 	{
+		[webview stringByEvaluatingJavaScriptFromString:[NSString stringWithFormat:@"document.body.style.minWidth='%fpx';document.body.style.minHeight='%fpx';",bounds.size.width-8,bounds.size.height-16]];
 		[TiUtils setView:webview positionRect:bounds];
 		
 		if (spinner!=nil)
@@ -209,83 +181,77 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	return [NSURL URLWithString:[[NSString stringWithFormat:@"app://%@/%@",TI_APPLICATION_ID,path] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 }
 
-- (NSString *)titaniumInjection
+-(NSString*)_gaeaInjection
 {
-	if (pageToken==nil) {
-		pageToken = [[NSString stringWithFormat:@"%d",[self hash]] retain];
-		[(TiUIWebViewProxy*)self.proxy setPageToken:pageToken];
-	}
 	NSMutableString *html = [[[NSMutableString alloc] init] autorelease];
 	[html appendString:@"<script id='__ti_injection'>"];
 	NSString *ti = [NSString stringWithFormat:@"%@%s",@"Ti","tanium"];
 	[html appendFormat:@"window.%@={};window.Ti=%@;Ti.pageToken=%@;Ti.appId='%@';",ti,ti,pageToken,TI_APPLICATION_ID];
-	[html appendString:kTitaniumJavascript];
+	[html appendString:kGaeaJavascript];
 	[html appendString:@"</script>"];
 	return html;
 }
 
-+ (NSString *)content:(NSString *)content withInjection:(NSString *)injection
+-(void)prepareInjection
 {
-	if ([content length] == 0) {
-		return content;
+	if (pageToken==nil)
+	{
+		pageToken = [[NSString stringWithFormat:@"%d",[self hash]] retain];
+		[(TiUIWebViewProxy*)self.proxy setPageToken:pageToken];
 	}
-	// attempt to make well-formed HTML and inject in our Titanium bridge code
-	// However, we only do this if the content looks like HTML
-	NSRange range = [content rangeOfString:@"<html"];
-	if (range.location == NSNotFound) {
-		//TODO: Someone did a DOCTYPE, and our search wouldn't find it. This search is tailored for him
-		//to cause the bug to go away, but is this really the right thing to do? Shouldn't we have a better
-		//way to check?
-		range = [content rangeOfString:@"<!DOCTYPE html"];
-	}
-	
-	if (range.location != NSNotFound) {
-		NSMutableString *html = [[NSMutableString alloc] initWithCapacity:[content length]+2000];
-		NSRange nextRange = [content rangeOfString:@">" options:0 range:NSMakeRange(range.location, [content length]-range.location) locale:nil];
-		if (nextRange.location != NSNotFound) {
-			[html appendString:[content substringToIndex:nextRange.location+1]];
-			[html appendString:injection];
-			[html appendString:[content substringFromIndex:nextRange.location+1]];
-		} else {
-			// oh well, just jack it in
-			[html appendString:injection];
-			[html appendString:content];
-		}
-		
-		return [html autorelease];
-	}
-	return content;
 }
 
--(void)loadHTML:(NSString*)content
+-(void)loadHTML:(NSString*)content 
 	   encoding:(NSStringEncoding)encoding 
 	   textEncodingName:(NSString*)textEncodingName
 	   mimeType:(NSString*)mimeType
 	   baseURL:(NSURL*)baseURL
 {
-	if (baseURL == nil) {
-		baseURL = [NSURL fileURLWithPath:[TiHost resourcePath]];
+	// attempt to make well-formed HTML and inject in our Gaea bridge code
+	// However, we only do this if the content looks like HTML
+	NSRange range = [content rangeOfString:@"<html"];
+	if (range.location==NSNotFound)
+	{
+		//TODO: Someone did a DOCTYPE, and our search wouldn't find it. This search is tailored for him
+		//to cause the bug to go away, but is this really the right thing to do? Shouldn't we have a better
+		//way to check?
+		range = [content rangeOfString:@"<!DOCTYPE html"];
 	}
-	content = [[self class] content:content withInjection:[self titaniumInjection]];
-	
-	[[self webview] loadData:[content dataUsingEncoding:encoding] MIMEType:mimeType textEncodingName:textEncodingName baseURL:baseURL];
-	if (scalingOverride==NO) {
-		[[self webview] setScalesPageToFit:NO];
-	}
-}
 
--(void)loadFile:(NSString*)absolutePath
-	   encoding:(NSStringEncoding)encoding
-		textEncodingName:(NSString*)textEncodingName
-	   mimeType:(NSString*)mimeType
-{
-	NSURL *requestURL = [NSURL fileURLWithPath:absolutePath];
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestURL];
-	[NSURLProtocol setProperty:textEncodingName forKey:kContentTextEncoding inRequest:request];
-	[NSURLProtocol setProperty:mimeType forKey:kContentMimeType inRequest:request];
+	if (range.location!=NSNotFound)
+	{
+		[self prepareInjection];
+		NSMutableString *html = [[NSMutableString alloc] initWithCapacity:[content length]+2000];
+
+		NSRange nextRange = [content rangeOfString:@">" options:0 range:NSMakeRange(range.location, [content length]-range.location) locale:nil];
+		if (nextRange.location!=NSNotFound)
+		{
+			[html appendString:[content substringToIndex:nextRange.location+1]];
+			[html appendString:[self _gaeaInjection]];
+			[html appendString:[content substringFromIndex:nextRange.location+1]];
+		}
+		else
+		{
+			// oh well, just jack it in
+			[html appendString:[self _gaeaInjection]];
+			[html appendString:content];
+		}
+		
+		content = [html autorelease];
+	}
+	  
+	NSURL *relativeURL = baseURL == nil ? [self fileURLToAppURL:url] : baseURL;
 	
-	[self loadURLRequest:request];
-	if (scalingOverride==NO) {
+	if (url!=nil)
+	{
+		[[self webview] loadHTMLString:content baseURL:relativeURL];
+	}
+	else
+	{
+		[[self webview] loadData:[content dataUsingEncoding:encoding] MIMEType:mimeType textEncodingName:textEncodingName baseURL:relativeURL];
+	}
+	if (scalingOverride==NO)
+	{
 		[[self webview] setScalesPageToFit:NO];
 	}
 }
@@ -385,7 +351,7 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 {
     NSString *baseURLString = [TiUtils stringValue:@"baseURL" properties:property];
     NSURL *baseURL = baseURLString == nil ? nil : [NSURL URLWithString:baseURLString];
-    NSString *mimeType = [TiUtils stringValue:@"mimeType" properties:property def:kMimeTextHTML];
+    NSString *mimeType = [TiUtils stringValue:@"mimeType" properties:property def:@"text/html"];
 	ignoreNextRequest = YES;
 	[self setReloadData:content];
 	[self setReloadDataProperties:property];
@@ -401,11 +367,13 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	reloadMethod = @selector(setData_:);
 	RELEASE_TO_NIL(url);
 	ENSURE_SINGLE_ARG(args,NSObject);
-	
-	[self stopLoading];
-
 	if ([args isKindOfClass:[TiBlob class]])
 	{
+		if (scalingOverride==NO)
+		{
+			[[self webview] setScalesPageToFit:YES];
+		}
+		
 		TiBlob *blob = (TiBlob*)args;
 		TiBlobType type = [blob type];
 		switch (type)
@@ -413,16 +381,12 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 			case TiBlobTypeData:
 			{
 				[[self webview] loadData:[blob data] MIMEType:[blob mimeType] textEncodingName:@"utf-8" baseURL:nil];
-				if (scalingOverride==NO)
-				{
-					[[self webview] setScalesPageToFit:YES];
-				}
 				break;
 			}
 			case TiBlobTypeFile:
 			{
 				url = [[NSURL fileURLWithPath:[blob path]] retain];
-				[self loadLocalURL];
+				[self loadURLRequest:[NSMutableURLRequest requestWithURL:url]];
 				break;
 			}
 			default:
@@ -435,7 +399,11 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	{
 		TiFile *file = (TiFile*)args;
 		url = [[NSURL fileURLWithPath:[file path]] retain];
-		[self loadLocalURL];
+		if (scalingOverride==NO)
+		{
+			[[self webview] setScalesPageToFit:YES];
+		}
+		[self loadURLRequest:[NSMutableURLRequest requestWithURL:url]];
 	}
 	else
 	{
@@ -463,7 +431,11 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	[[self scrollview] setScrollsToTop:scrollsToTop];
 }
 
-- (void)setUrl_:(id)args
+#ifndef USE_BASE_URL
+#define USE_BASE_URL	1
+#endif
+
+-(void)setUrl_:(id)args
 {
 	ignoreNextRequest = YES;
 	[self setReloadData:args];
@@ -477,96 +449,128 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 
 	[self stopLoading];
 	
-	if ([[self class] isLocalURL:url]) {
-		[self loadLocalURL];
-	} else {
+	if ([self isURLRemote])
+	{
 		NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 		[self loadURLRequest:request];
-		if (scalingOverride==NO) {
+		if (scalingOverride==NO)
+		{
 			[[self webview] setScalesPageToFit:YES];
 		}
 	}
-}
-
-- (void)loadLocalURL
-{
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
-		[NSURLProtocol registerClass:[LocalProtocolHandler class]];
-	});
-
-	NSStringEncoding encoding = NSUTF8StringEncoding;
-	NSString *mimeType = [Mimetypes mimeTypeForExtension:[url path]];
-	NSString *textEncodingName = @"utf-8";
-	NSString *path = [url path];
-	NSError *error = nil;
-	NSURL *baseURL = [[url copy] autorelease];
-	
-	// first check to see if we're attempting to load a file from the
-	// filesystem and if so, and it exists, use that
-	if ([[NSFileManager defaultManager] fileExistsAtPath:path])
+	else
 	{
-		// per the Apple docs on what to do when you don't know the encoding ahead of a
-		// file read:
-		// step 1: read and attempt to have system determine
-		NSString *html = [NSString stringWithContentsOfFile:path usedEncoding:&encoding error:&error];
-		if (html==nil && error!=nil)
+		NSString *html = nil;
+		NSStringEncoding encoding = NSUTF8StringEncoding;
+		NSString *mimeType = [Mimetypes mimeTypeForExtension:[url path]];
+		NSString *textEncodingName = @"utf-8";
+		NSString *path = [url path];
+		NSError *error = nil;
+#if USE_BASE_URL
+		NSURL *baseURL = [[url retain] autorelease];
+#endif
+		
+		// first check to see if we're attempting to load a file from the 
+		// filesystem and if so, and it exists, use that 
+		if ([[NSFileManager defaultManager] fileExistsAtPath:path])
 		{
-			//step 2: if unknown encoding, try UTF-8
-			error = nil;
-			html = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
+			// per the Apple docs on what to do when you don't know the encoding ahead of a 
+			// file read:
+			// step 1: read and attempt to have system determine
+			html = [NSString stringWithContentsOfFile:path usedEncoding:&encoding error:&error];
 			if (html==nil && error!=nil)
 			{
-				//step 3: try an appropriate legacy encoding (if one) -- what's that? Latin-1?
-				//at this point we're just going to fail
-				DebugLog(@"[ERROR] Couldn't determine the proper encoding. Make sure this file: %@ is UTF-8 encoded.",[path lastPathComponent]);
-			} else {
-				// if we get here, it succeeded using UTF8
-				encoding = NSUTF8StringEncoding;
-				textEncodingName = @"utf-8";
+				//step 2: if unknown encoding, try UTF-8
+				error = nil;
+				html = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
+				if (html==nil && error!=nil)
+				{
+					//step 3: try an appropriate legacy encoding (if one) -- what's that? Latin-1?
+					//at this point we're just going to fail
+					DebugLog(@"[ERROR] Couldn't determine the proper encoding. Make sure this file: %@ is UTF-8 encoded.",[path lastPathComponent]);
+				}
+				else
+				{
+					// if we get here, it succeeded using UTF8
+					encoding = NSUTF8StringEncoding;
+					textEncodingName = @"utf-8";
+				}
 			}
-		} else {
-			error = nil;
-			textEncodingName = HTMLTextEncodingNameForStringEncoding(encoding);
-			if (textEncodingName == nil) {
-				DebugLog(@"[WARN] Could not determine correct text encoding for content: %@.",url);
-				textEncodingName = @"utf-8";
+			else
+			{
+				error = nil;
+				if (encoding == NSUTF8StringEncoding)
+				{
+					textEncodingName = @"utf-8";
+				}
+				else if (encoding == NSUTF16StringEncoding)
+				{
+					textEncodingName = @"utf-16";
+				}
+				else if (encoding == NSASCIIStringEncoding)
+				{
+					textEncodingName = @"us-ascii";
+				}
+				else if (encoding == NSISOLatin1StringEncoding)
+				{
+					textEncodingName = @"latin1";
+				}
+				else if (encoding == NSShiftJISStringEncoding)
+				{
+					textEncodingName = @"shift_jis";
+				}
+				else if (encoding == NSWindowsCP1252StringEncoding)
+				{
+					textEncodingName = @"windows-1251";
+				}
+				else 
+				{
+					DebugLog(@"[WARN] Could not determine correct text encoding for content: %@.",url);
+				}
 			}
-		}
-		if ((error!=nil && [error code]==261) || [mimeType isEqualToString:(NSString*)svgMimeType])
-		{
-			//TODO: Shouldn't we be checking for an HTML mime type before trying to read? This is right now rather inefficient, but it
+			if ((error!=nil && [error code]==261) || [mimeType isEqualToString:(NSString*)svgMimeType])
+			{//TODO: Shouldn't we be checking for an HTML mime type before trying to read? This is right now rather inefficient, but it
 			//Gets the job done, with minimal reliance on extensions.
-			// this is a different encoding than specified, just send it to the webview to load
-			
-			NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-			[self loadURLRequest:request];
-			if (scalingOverride==NO) {
-				[[self webview] setScalesPageToFit:YES];
+				// this is a different encoding than specified, just send it to the webview to load
+				NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+				[self loadURLRequest:request];
+				if (scalingOverride==NO)
+				{
+					[[self webview] setScalesPageToFit:YES];
+				}
+				return;
 			}
-			return;
-		} else if (error!=nil) {
-			NSLog(@"[ERROR] Error loading file: %@. Message was: %@",path,error);
-			RELEASE_TO_NIL(url);
-			return;
+			else if (error!=nil)
+			{
+				NSLog(@"[ERROR] Error loading file: %@. Message was: %@",path,error);
+				RELEASE_TO_NIL(url);
+			}
 		}
-		[self loadFile:path encoding:encoding textEncodingName:textEncodingName mimeType:mimeType];
-	} else {
-		// convert it into a app:// relative path to load the resource
-		// from our application
-		url = [[self fileURLToAppURL:url] retain];
-		NSData *data = [TiUtils loadAppResource:url];
-		NSString *html = nil;
-		if (data != nil) {
-			html = [[[NSString alloc] initWithData:data encoding:encoding] autorelease];
+		else
+		{
+			// convert it into a app:// relative path to load the resource
+			// from our application
+			url = [[self fileURLToAppURL:url] retain];
+			NSData *data = [TiUtils loadAppResource:url];
+			if (data!=nil)
+			{
+				html = [[[NSString alloc] initWithData:data encoding:encoding] autorelease];
+			}
 		}
-		if (html!=nil) {
+		if (html!=nil)
+		{
 			//Because local HTML may rely on JS that's stored in the app: schema, we must kee the url in the app: format.
+#if USE_BASE_URL
 			[self loadHTML:html encoding:encoding textEncodingName:textEncodingName mimeType:mimeType baseURL:baseURL];
-		} else {
+#else
+			[self loadHTML:html encoding:encoding textEncodingName:textEncodingName mimeType:mimeType baseURL:url];
+#endif
+		}
+		else 
+		{
 			NSLog(@"[WARN] couldn't load URL: %@",url);
 			RELEASE_TO_NIL(url);
-		}	
+		}
 	}
 }
 
@@ -608,28 +612,27 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	return [[self webview] stringByEvaluatingJavaScriptFromString:code];
 }
 
+// Webview appears to have an interesting quirk where the web content is always scaled/sized to just barely
+// not fit within the bounds of its specialized scroll box, UNLESS you are sizing the view to 320px (full width).
+// 'auto' width setting for web views is NOT RECOMMENDED as a result.  'auto' height is OK, and necessary
+// when placing webviews with other elements.
 -(CGFloat)contentHeightForWidth:(CGFloat)value
 {
-    CGRect oldBounds = [[self webview] bounds];
-    BOOL oldVal = webview.scalesPageToFit;
-    [webview setScalesPageToFit:NO];
-    [webview setBounds:CGRectMake(0, 0, 10, 1)];
-    CGFloat ret = [webview sizeThatFits:CGSizeMake(10, 1)].height;
-    [webview setBounds:oldBounds];
-    [webview setScalesPageToFit:oldVal];
-    return ret;
+	CGRect oldBounds = [[self webview] bounds];
+	[webview setBounds:CGRectMake(0, 0, MAX(value,10), 1)];
+	CGFloat result = [[webview stringByEvaluatingJavaScriptFromString:@"document.height"] floatValue];
+	[webview setBounds:oldBounds];
+	return result;
 }
 
 -(CGFloat)contentWidthForWidth:(CGFloat)value
 {
     CGRect oldBounds = [[self webview] bounds];
-    BOOL oldVal = webview.scalesPageToFit;
-    [webview setScalesPageToFit:NO];
-    [webview setBounds:CGRectMake(0, 0, 10, 1)];
-    CGFloat ret = [webview sizeThatFits:CGSizeMake(10, 1)].width;
+    CGFloat currentHeight = [[webview stringByEvaluatingJavaScriptFromString:@"document.height"] floatValue];
+    [webview setBounds:CGRectMake(0, 0, 10, currentHeight)];
+    CGFloat realWidth = [[webview stringByEvaluatingJavaScriptFromString:@"document.width"] floatValue];
     [webview setBounds:oldBounds];
-    [webview setScalesPageToFit:oldVal];
-    return ret;
+    return (value < realWidth) ? value : realWidth;
 }
 
 #pragma mark WebView Delegate
@@ -645,8 +648,8 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 	}
 
 	NSString * scheme = [[newUrl scheme] lowercaseString];
-	if ([scheme hasPrefix:@"http"] || [scheme isEqualToString:@"ftp"]
-			|| [scheme isEqualToString:@"file"] || [scheme isEqualToString:@"app"]) {
+	if ([scheme hasPrefix:@"http"] || [scheme hasPrefix:@"app"] || [scheme hasPrefix:@"file"] || [scheme hasPrefix:@"ftp"])
+	{
 		DebugLog(@"[DEBUG] New scheme: %@",request);
         BOOL valid = !ignoreNextRequest;
         if ([scheme hasPrefix:@"http"]) {
@@ -654,13 +657,11 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
             //or it is a js request from within the page 
             valid = valid && (navigationType != UIWebViewNavigationTypeOther);
         }
-		if (valid) {
+		if (valid)
+		{
 			[self setReloadData:[newUrl absoluteString]];
 			[self setReloadDataProperties:nil];
 			reloadMethod = @selector(setUrl_:);
-		}
-		if ([scheme isEqualToString:@"file"] || [scheme isEqualToString:@"app"]) {
-			[NSURLProtocol setProperty:[self titaniumInjection] forKey:kContentInjection inRequest:(NSMutableURLRequest *)request];
 		}
 		return YES;
 	}
@@ -778,72 +779,6 @@ NSString *HTMLTextEncodingNameForStringEncoding(NSStringEncoding encoding)
 		NSString *js = [NSString stringWithFormat:@"Ti.App._dispatchEvent('%@',%@,%@);",name,listener,[SBJSON stringify:event]];
 		[webview stringByEvaluatingJavaScriptFromString:js];
 	}
-}
-
-@end
-
-@implementation LocalProtocolHandler
-
-+ (BOOL)canInitWithRequest:(NSURLRequest *)request
-{
-	return [request.URL.scheme isEqualToString:@"file"];
-}
-
-+ (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request
-{
-	return request;
-}
-
-+ (BOOL)requestIsCacheEquivalent:(NSURLRequest *)a toRequest:(NSURLRequest *)b
-{
-	return NO;
-}
-
-- (void)startLoading
-{
-	id<NSURLProtocolClient> client = [self client];
-    NSURLRequest *request = [self request];
-	NSURL *url = [request URL];
-	NSString *absolutePath = [url path];
-	
-	NSStringEncoding contentDataEncoding = [[[self class] propertyForKey:kContentDataEncoding inRequest:request] unsignedIntegerValue];
-	if (contentDataEncoding == 0) {
-		contentDataEncoding = NSUTF8StringEncoding;
-	}
-	NSString *contentTextEncoding = [[self class] propertyForKey:kContentTextEncoding inRequest:request];
-	NSData *contentData = [[self class] propertyForKey:kContentData inRequest:request];
-	if (contentData == nil) {
-		contentData = [TiUtils loadAppResource:url];
-		if (contentData == nil) {
-			contentData = [NSData dataWithContentsOfFile:absolutePath];
-			if (contentData == nil) {
-				NSLog(@"[ERROR] Error loading %@", absolutePath);
-				[client URLProtocol:self didFailWithError:[NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorResourceUnavailable userInfo:nil]];
-				[client URLProtocolDidFinishLoading:self];
-				return;
-			}
-		}
-	}
-	NSString *contentMimeType = [[self class] propertyForKey:kContentMimeType inRequest:request];
-	if (contentMimeType == nil) {
-		contentMimeType = [Mimetypes mimeTypeForExtension:absolutePath];
-	}
-	NSString *contentInjection = [[self class] propertyForKey:kContentInjection inRequest:request];
-	if ((contentInjection != nil) && [contentMimeType isEqualToString:kMimeTextHTML]) {
-		NSString *content = [[NSString alloc] initWithData:contentData encoding:contentDataEncoding];
-		contentData = [[TiUIWebView content:content withInjection:contentInjection] dataUsingEncoding:contentDataEncoding];
-		[content release];
-	}
-	NSURLResponse *response = [[NSURLResponse alloc] initWithURL:url MIMEType:contentMimeType expectedContentLength:[contentData length] textEncodingName:contentTextEncoding];
-	[client URLProtocol:self didReceiveResponse:response cacheStoragePolicy:NSURLCacheStorageNotAllowed];
-	[client URLProtocol:self didLoadData:contentData];
-	[client URLProtocolDidFinishLoading:self];
-	[response release];
-}
-
-- (void)stopLoading
-{
-	// NO-OP
 }
 
 @end

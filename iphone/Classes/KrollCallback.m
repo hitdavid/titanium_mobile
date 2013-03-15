@@ -146,7 +146,13 @@ static NSLock *callbackLock;
 	if (exception!=NULL)
 	{
 		id excm = [KrollObject toID:context value:exception];
-		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:[TiUtils scriptErrorValue:excm]];
+		TiScriptError *scriptError = nil;
+		if ([excm isKindOfClass:[NSDictionary class]]) {
+			scriptError = [[TiScriptError alloc] initWithDictionary:excm];
+		} else {
+			scriptError = [[TiScriptError alloc] initWithMessage:[excm description] sourceURL:nil lineNo:0];
+		}
+		[[TiExceptionHandler defaultExceptionHandler] reportScriptError:scriptError];
 	}
 	if (top!=NULL)
 	{
