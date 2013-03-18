@@ -818,6 +818,8 @@ define(
 				set : function(value) {
 					if (is(value,'Number')) {
 						this._flex = value;
+						this._defaultWidth= UI.FILL;
+						this._defaultHeight= UI.FILL;
 					}
 					return value;
 				},
