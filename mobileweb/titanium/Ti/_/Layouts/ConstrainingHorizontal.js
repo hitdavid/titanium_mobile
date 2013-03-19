@@ -103,7 +103,7 @@ define(["Ti/_/Layouts/Base", "Ti/_/declare", "Ti/UI", "Ti/_/lang", "Ti/_/style"]
 						sandboxHeightLayoutCoefficients = layoutCoefficients.sandboxHeight;
 						
 						measuredHeight = heightLayoutCoefficients.x1 * height + heightLayoutCoefficients.x2;
-						measuredWidth = widthLayoutCoefficients.x1 * width + widthLayoutCoefficients.x2 * (i < len - 1 ? runningWidth : remainingSpace - runningWidth * (fillCount - 1)) + widthLayoutCoefficients.x3;
+						measuredWidth = widthLayoutCoefficients.x1 * width + widthLayoutCoefficients.x2 * ((i < len - 1 || child._flex)? runningWidth : remainingSpace - runningWidth * (fillCount - 1)) + widthLayoutCoefficients.x3;
 						
 						if (child._getContentSize) {
 							childSize = child._getContentSize(measuredWidth, measuredHeight);
