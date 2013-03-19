@@ -45,7 +45,7 @@ public abstract class KrollRuntime implements Handler.Callback
 
 	private static KrollRuntime instance;
 	private static int activityRefCount = 0;
-	private static int serviceReceiverRefCount = 0;
+	private static int serviceRefCount = 0;
 
 	private WeakReference<KrollApplication> krollApplication;
 	private KrollRuntimeThread thread;
@@ -375,7 +375,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	public static void incrementActivityRefCount()
 	{
 		activityRefCount++;
-		if ((activityRefCount + serviceReceiverRefCount) == 1 && instance != null) {
+		if ((activityRefCount + serviceRefCount) == 1 && instance != null) {
 			syncInit();
 		}
 	}
@@ -383,7 +383,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	public static void decrementActivityRefCount()
 	{
 		activityRefCount--;
-		if ((activityRefCount + serviceReceiverRefCount) > 0 || instance == null) {
+		if ((activityRefCount + serviceRefCount) > 0 || instance == null) {
 			return;
 		}
 
@@ -396,27 +396,27 @@ public abstract class KrollRuntime implements Handler.Callback
 	}
 
 	// Similar to {@link #incrementActivityRefCount} but for a Titanium Service.
-	public static void incrementServiceReceiverRefCount()
+	public static void incrementServiceRefCount()
 	{
-		serviceReceiverRefCount++;
-		if ((activityRefCount + serviceReceiverRefCount) == 1 && instance != null) {
+		serviceRefCount++;
+		if ((activityRefCount + serviceRefCount) == 1 && instance != null) {
 			syncInit();
 		}
 	}
 
-	public static void decrementServiceReceiverRefCount()
+	public static void decrementServiceRefCount()
 	{
-		serviceReceiverRefCount--;
-		if ((activityRefCount + serviceReceiverRefCount) > 0 || instance == null) {
+		serviceRefCount--;
+		if ((activityRefCount + serviceRefCount) > 0 || instance == null) {
 			return;
 		}
 
 		instance.dispose();
 	}
 
-	public static int getServiceReceiverRefCount()
+	public static int getServiceRefCount()
 	{
-		return serviceReceiverRefCount;
+		return serviceRefCount;
 	}
 
 	private void internalDispose()
