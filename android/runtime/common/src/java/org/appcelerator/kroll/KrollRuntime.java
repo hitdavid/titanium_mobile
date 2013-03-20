@@ -138,7 +138,10 @@ public abstract class KrollRuntime implements Handler.Callback
 	{
 		Log.d(TAG, "=== Kroll Runtime init begin");
 		// Initialized the runtime if it isn't already initialized
-		if (runtimeState != State.INITIALIZED) {
+		
+		//david 
+		//2013-3-19
+		//if (runtimeState != State.INITIALIZED) {
 			Log.d(TAG, "=== runtimeState != State.INITIALIZED");
 			
 			int stackSize = runtime.getThreadStackSize(context);
@@ -148,7 +151,7 @@ public abstract class KrollRuntime implements Handler.Callback
 
 			instance = runtime; // make sure this is set before the runtime thread is started
 			runtime.thread.run();
-		}
+		//}
 
 		KrollAssetHelper.init(context);
 		Log.d(TAG, "=== Kroll Runtime init end");

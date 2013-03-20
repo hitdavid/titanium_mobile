@@ -972,6 +972,7 @@ public abstract class TiUIView
 	 */
 	public void hide()
 	{
+		Log.d(TAG, "do hide in view", Log.DEBUG_MODE);
 		this.setVisibility(View.INVISIBLE);
 		if (borderView == null && nativeView == null) {
 			Log.w(TAG, "Attempt to hide null native control", Log.DEBUG_MODE);

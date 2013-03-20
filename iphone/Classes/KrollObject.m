@@ -302,10 +302,10 @@ bool KrollSetProperty(TiContextRef jsContext, TiObjectRef object, TiStringRef pr
 
 // forward declare these
 
-//@interface GaeaObject : NSObject
+//@interface TitaniumObject : NSObject
 //@end
 
-@interface GaeaObject (Private)
+@interface TitaniumObject (Private)
 -(NSDictionary*)modules;
 @end
 
@@ -323,9 +323,9 @@ void KrollPropertyNames(TiContextRef ctx, TiObjectRef object, TiPropertyNameAccu
 	{
 		id target = [o target];
 		
-		if ([o isKindOfClass:[GaeaObject class]])
+		if ([o isKindOfClass:[TitaniumObject class]])
 		{
-			for (NSString *key in [[(GaeaObject*)o modules] allKeys])
+			for (NSString *key in [[(TitaniumObject*)o modules] allKeys])
 			{
 				TiStringRef value = TiStringCreateWithUTF8CString([key UTF8String]);
 				TiPropertyNameAccumulatorAddName(propertyNames,value);

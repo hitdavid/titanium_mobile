@@ -865,7 +865,7 @@ static TiValueRef StringFormatDecimalCallback (TiContextRef jsContext, TiObjectR
 {
     if (stopped!=YES)
     {
-        @throw [NSException exceptionWithName:@"org.gaea.kroll"
+        @throw [NSException exceptionWithName:@"org.titanium.kroll"
                                        reason:@"already started"
                                      userInfo:nil];
     }
