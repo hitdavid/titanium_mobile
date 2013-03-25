@@ -85,14 +85,13 @@ public class TiDrawableReference
 	private int orientation = -1;
 
 	//david
-	//private SoftReference<Activity> softActivity = null;
-
-	private Activity softActivity = null;
+	private SoftReference<Activity> softActivity = null;
+	//private Activity softActivity = null;
 
 	public TiDrawableReference(Activity activity, DrawableReferenceType type)
 	{
 		this.type = type;
-		softActivity = activity;
+		softActivity = new SoftReference<Activity>(activity);
 		ApplicationInfo appInfo;
 
 		if (activity != null) {
@@ -526,8 +525,8 @@ public class TiDrawableReference
 		if (parent == null) {
 			
 			//david
-			//Activity activity = softActivity.get();
-			Activity activity = softActivity;
+			Activity activity = softActivity.get();
+//			Activity activity = softActivity;
 			if (activity != null && activity.getWindow() != null) {
 				parent = activity.getWindow().getDecorView();
 			}
