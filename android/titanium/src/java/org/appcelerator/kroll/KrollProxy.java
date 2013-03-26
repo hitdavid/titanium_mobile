@@ -563,16 +563,16 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	 */
 	public void setProperty(String name, Object value)
 	{
-		Log.d(TAG, "setProperty"+ name, Log.DEBUG_MODE);
+//		Log.d(TAG, "setProperty"+ name, Log.DEBUG_MODE);
 		properties.put(name, value);
 
 		if (KrollRuntime.getInstance().isRuntimeThread()) {
-			Log.d(TAG, "setProperty doSetpropertity in runtime thread", Log.DEBUG_MODE);
+//			Log.d(TAG, "setProperty doSetpropertity in runtime thread", Log.DEBUG_MODE);
 			doSetProperty(name, value);
 
 		} else {
 
-			Log.d(TAG, "setProperty doSetpropertity not in runtime thread", Log.DEBUG_MODE);
+//			Log.d(TAG, "setProperty doSetpropertity not in runtime thread", Log.DEBUG_MODE);
 			Message message = getRuntimeHandler().obtainMessage(MSG_SET_PROPERTY, value);
 			message.getData().putString(PROPERTY_NAME, name);
 			message.sendToTarget();
@@ -703,21 +703,21 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 
 	public void firePropertyChanged(String name, Object oldValue, Object newValue)
 	{
-		Log.d(TAG, "firePropertyChanged"+ name, Log.DEBUG_MODE);
+//		Log.d(TAG, "firePropertyChanged"+ name, Log.DEBUG_MODE);
 		if (modelListener != null) {
 			if (TiApplication.isUIThread()) {
-				Log.d(TAG, "firePropertyChanged in UI before calling", Log.DEBUG_MODE);
+//				Log.d(TAG, "firePropertyChanged in UI before calling", Log.DEBUG_MODE);
 				modelListener.propertyChanged(name, oldValue, newValue, this);
 
 			} else {
-				Log.d(TAG, "firePropertyChanged in non UI before calling", Log.DEBUG_MODE);
+//				Log.d(TAG, "firePropertyChanged in non UI before calling", Log.DEBUG_MODE);
 				KrollPropertyChange pch = new KrollPropertyChange(name, oldValue, newValue);
 				getMainHandler().obtainMessage(MSG_MODEL_PROPERTY_CHANGE, pch).sendToTarget();
 			}
 		}
-		else {
-			Log.d(TAG, "firePropertyChanged exit when modelListener is null", Log.DEBUG_MODE);
-		}
+//		else {
+//			Log.d(TAG, "firePropertyChanged exit when modelListener is null", Log.DEBUG_MODE);
+//		}
 	}
 
 	public void onHasListenersChanged(String event, boolean hasListeners)
@@ -776,7 +776,7 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 	 */
 	public void setPropertyAndFire(String name, Object value)
 	{
-		Log.i("setPropertyAndFire", name);
+//		Log.i("setPropertyAndFire", name);
 				
 		Object current = getProperty(name);
 		setProperty(name, value);
@@ -799,7 +799,7 @@ public class KrollProxy implements Handler.Callback, KrollProxySupport
 		Object newValue = value;
 
 		if (isLocaleProperty(name)) {
-			Log.i(TAG, "Updating locale: " + name, Log.DEBUG_MODE);
+//			Log.i(TAG, "Updating locale: " + name, Log.DEBUG_MODE);
 			Pair<String, String> update = updateLocaleProperty(name, TiConvert.toString(value));
 			if (update != null) {
 				propertyName = update.first;

@@ -281,12 +281,13 @@ public class TiCompositeLayout extends ViewGroup
 	{
 
 		if(Log.isDebugModeEnabled()) {
-			if(proxy.get() != null) {
-				if(proxy.get().getProperty(TiC.PROPERTY_ID) != null) {
-					Log.d(TAG, "On measure ! "+ TiConvert.toString(proxy.get().getProperty(TiC.PROPERTY_ID)) , Log.DEBUG_MODE);
+			TiViewProxy thisProxy = proxy.get();
+			if(thisProxy != null) {
+				if(thisProxy.getProperty(TiC.PROPERTY_ID) != null) {
+					Log.d(TAG, "On measure ! "+ TiConvert.toString(thisProxy.getProperty(TiC.PROPERTY_ID)) , Log.DEBUG_MODE);
 				}
 				else {
-					Log.d(TAG, "On measure ! "+ proxy.get().toString() , Log.DEBUG_MODE);
+					Log.d(TAG, "On measure ! "+ thisProxy.toString() , Log.DEBUG_MODE);
 				}
 			}
 		}
@@ -301,8 +302,8 @@ public class TiCompositeLayout extends ViewGroup
 		int h = Math.max(hFromSpec, hSuggested);
 		int hMode = MeasureSpec.getMode(heightMeasureSpec);
 		
-		Log.d(TAG, "w and wMode are ==> "+new Integer(w).toString()+", "+new Integer(wMode).toString() , Log.DEBUG_MODE);
-		Log.d(TAG, "h and hMode are ==> "+new Integer(h).toString()+", "+new Integer(hMode).toString() , Log.DEBUG_MODE);
+//		Log.d(TAG, "w and h are ==> "+new Integer(w).toString()+", "+new Integer(h).toString() , Log.DEBUG_MODE);
+
 		
 		int maxWidth = 0;
 		int maxHeight = 0;
@@ -363,43 +364,43 @@ public class TiCompositeLayout extends ViewGroup
 			TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
 			if (params.optionWidth != null) {
 				totalFixedWidth += params.optionWidth.getIntValue();
-				Log.d(TAG, "this width is "+ new Integer(params.optionWidth.getIntValue()).toString(), Log.DEBUG_MODE);
+//				Log.d(TAG, "this width is "+ new Integer(params.optionWidth.getIntValue()).toString(), Log.DEBUG_MODE);
 			}
 			else if(childWidth > 0 && params.flex == null) {
 				totalFixedWidth += childWidth;
-				Log.d(TAG, "option width is 0, this width is "+ new Integer(childWidth).toString(), Log.DEBUG_MODE);
+//				Log.d(TAG, "option width is 0, this width is "+ new Integer(childWidth).toString(), Log.DEBUG_MODE);
 			}
 			
 			if (params.optionHeight != null) {
 				totalFixedHeight += params.optionHeight.getIntValue();
-				Log.d(TAG, "this height is "+ new Integer(params.optionHeight.getIntValue()).toString(), Log.DEBUG_MODE);
+//				Log.d(TAG, "this height is "+ new Integer(params.optionHeight.getIntValue()).toString(), Log.DEBUG_MODE);
 			}
 			else if(childHeight > 0 && params.flex == null) {
 				totalFixedHeight += childHeight;
-				Log.d(TAG, "option height is 0, this height is "+ new Integer(childHeight).toString(), Log.DEBUG_MODE);
+//				Log.d(TAG, "option height is 0, this height is "+ new Integer(childHeight).toString(), Log.DEBUG_MODE);
 			}
 
-			Log.d(TAG, "current totalFixedWidth and totalFixedHeight are "+
-					new Integer(totalFixedWidth).toString() +", "+ new Integer(totalFixedHeight).toString(), Log.DEBUG_MODE);
+//			Log.d(TAG, "current totalFixedWidth and totalFixedHeight are "+
+//					new Integer(totalFixedWidth).toString() +", "+ new Integer(totalFixedHeight).toString(), Log.DEBUG_MODE);
 			
 			if (params.flex != null) {
 				if(isVerticalArrangement() && params.optionHeight == null){
 					sumFlex += params.flex.getValue();
 					flexUnitCount ++;
-					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
+//					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
 				}
 				else if( (isHorizontalArrangement() || isDefaultArrangement()) && params.optionWidth == null) {
 					sumFlex += params.flex.getValue();
 					flexUnitCount ++;
-					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
+//					Log.d(TAG, "this flex is "+new Float(params.flex.getValue()).toString(), Log.DEBUG_MODE);
 				}
-				else {
-					Log.w(TAG, "unknown arrangement method!", Log.DEBUG_MODE);
-				}
+//				else {
+//					Log.w(TAG, "unknown arrangement method!", Log.DEBUG_MODE);
+//				}
 			}
-			else {
-				Log.d(TAG, "params.flex == null", Log.DEBUG_MODE);
-			}
+//			else {
+//				Log.d(TAG, "params.flex == null", Log.DEBUG_MODE);
+//			}
 		}
 
 		// Add height for last row in horizontal layout
@@ -426,9 +427,9 @@ public class TiCompositeLayout extends ViewGroup
 		int remainFlexableWidth = measuredWidth - totalFixedWidth; // - HMargins;
 		int remainFlexableHeight = measuredHeight - totalFixedHeight; // - VMargins;
 		
-		Log.d(TAG, "this remainFlexableWidth, remainFlexableHeight are "+
-				new Integer(remainFlexableWidth).toString()+", "+
-				new Integer(remainFlexableHeight).toString(), Log.DEBUG_MODE);
+//		Log.d(TAG, "this remainFlexableWidth, remainFlexableHeight are "+
+//				new Integer(remainFlexableWidth).toString()+", "+
+//				new Integer(remainFlexableHeight).toString(), Log.DEBUG_MODE);
 		
 		int childCalcWidth = 0;
 		int childCalcHeight = 0;
@@ -447,7 +448,7 @@ public class TiCompositeLayout extends ViewGroup
 			for (int i = 0; i < childCount; i++) {
 				View child = getChildAt(i);
 				
-				Log.d(TAG, "this child is "+child.getClass().getName(), Log.DEBUG_MODE);
+//				Log.d(TAG, "this child is "+child.getClass().getName(), Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams params = (TiCompositeLayout.LayoutParams) child.getLayoutParams();
 				if(isHorizontalArrangement()) {
@@ -461,8 +462,8 @@ public class TiCompositeLayout extends ViewGroup
 						else {
 							childCalcWidth = remainFlexableWidth - currentTotalCalcWidth;
 						}
-						Log.d(TAG, "this w and h are "+new Integer(childCalcWidth).toString() +", "+
-								new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
+//						Log.d(TAG, "this w and h are "+new Integer(childCalcWidth).toString() +", "+
+//								new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
 						params.autoFillsWidth = true;
 						constrainChild(child, childCalcWidth, MeasureSpec.EXACTLY, measuredHeight, hMode);
 					}
@@ -477,8 +478,8 @@ public class TiCompositeLayout extends ViewGroup
 						else {
 							childCalcHeight = remainFlexableHeight - currentTotalCalcHeight;
 						}
-						Log.d(TAG, "this w and h are "+new Integer(measuredWidth).toString() +", "+
-								new Integer(childCalcHeight).toString(), Log.DEBUG_MODE);
+//						Log.d(TAG, "this w and h are "+new Integer(measuredWidth).toString() +", "+
+//								new Integer(childCalcHeight).toString(), Log.DEBUG_MODE);
 						params.autoFillsHeight = true;
 						constrainChild(child, measuredWidth, wMode, childCalcHeight, MeasureSpec.EXACTLY);
 					}		
@@ -488,11 +489,11 @@ public class TiCompositeLayout extends ViewGroup
 			}
 		}
 		
-		Log.d(TAG, "measuredWidth is "+
-				new Integer(measuredWidth).toString(), Log.DEBUG_MODE);
-		Log.d(TAG, "measuredHeight is "
-				+new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
-		
+//		Log.d(TAG, "measuredWidth is "+
+//				new Integer(measuredWidth).toString(), Log.DEBUG_MODE);
+//		Log.d(TAG, "measuredHeight is "
+//				+new Integer(measuredHeight).toString(), Log.DEBUG_MODE);
+//		
 		setMeasuredDimension(measuredWidth, measuredHeight);
 	}
 
@@ -576,11 +577,11 @@ public class TiCompositeLayout extends ViewGroup
 
 		child.measure(widthSpec, heightSpec);
 //		 //Useful for debugging.
-		 int childWidth = child.getMeasuredWidth();
-		 int childHeight = child.getMeasuredHeight();
-		 Log.d(TAG, "constrain child and got w and h ===>"+ 
-				new Integer(childWidth).toString() +"  |  "+
-				new Integer(childHeight).toString(), Log.DEBUG_MODE);	 
+//		 int childWidth = child.getMeasuredWidth();
+//		 int childHeight = child.getMeasuredHeight();
+//		 Log.d(TAG, "constrain child and got w and h ===>"+ 
+//				new Integer(childWidth).toString() +"  |  "+
+//				new Integer(childHeight).toString(), Log.DEBUG_MODE);	 
 	}
 	
 	//david add
@@ -760,7 +761,7 @@ public class TiCompositeLayout extends ViewGroup
 
 				child.layout(horizontal[0], vertical[0], horizontal[1], vertical[1]);
 
-				Log.d(TAG, "onLayout call View.layout finished!", Log.DEBUG_MODE);
+//				Log.d(TAG, "onLayout call View.layout finished!", Log.DEBUG_MODE);
 				
 				
 				currentHeight += newHeight;

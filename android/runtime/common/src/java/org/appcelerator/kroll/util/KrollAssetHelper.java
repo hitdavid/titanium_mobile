@@ -13,15 +13,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
+import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiFastDev;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.util.Log;
+
 
 public class KrollAssetHelper
 {
 	private static final String TAG = "TiAssetHelper";
+	
+	//david
+	//2013-3-25
 	//private static WeakReference<AssetManager> manager;
 	private static AssetManager manager;
 	
@@ -40,9 +44,12 @@ public class KrollAssetHelper
 
 	public static void init(Context context)
 	{
-		Log.d("KrollAssetHelper public static void init(Context context) ", context.getAssets().toString());
+		Log.d(TAG, context.getAssets().toString(), Log.DEBUG_MODE);
 		//KrollAssetHelper.manager = new WeakReference<AssetManager>(context.getAssets());
-		KrollAssetHelper.manager = context.getAssets();
+		if(KrollAssetHelper.manager == null) {
+			KrollAssetHelper.manager = context.getAssets();
+		}
+		//KrollAssetHelper.manager = context.getAssets();
 		KrollAssetHelper.packageName = context.getPackageName();
 		KrollAssetHelper.cacheDir = context.getCacheDir().getAbsolutePath();
 	}
@@ -73,6 +80,7 @@ public class KrollAssetHelper
 
 		try {
 			AssetManager assetManager = KrollAssetHelper.manager;
+			//AssetManager assetManager = manager.get();
 			if (assetManager == null) {
 				Log.e(TAG, "AssetManager is null, can't read asset: " + path);
 				return null;

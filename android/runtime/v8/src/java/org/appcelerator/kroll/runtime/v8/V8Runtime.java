@@ -28,7 +28,7 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 	private static final String TAG = "KrollV8Runtime";
 	private static final String NAME = "v8";
 	private static final int MSG_PROCESS_DEBUG_MESSAGES = KrollRuntime.MSG_LAST_ID + 100;
-	private static final int MAX_V8_IDLE_INTERVAL = 30 * 1000; // ms
+	private static final int MAX_V8_IDLE_INTERVAL = 60 * 1000; // ms
 
 	private boolean libLoaded = false;
 
@@ -82,12 +82,18 @@ public final class V8Runtime extends KrollRuntime implements Handler.Callback
 					// a V8 GC (which is just a call to nativeIdle()), but nevertheless
 					// if more than the recommended time has passed since the last
 					// call to nativeIdle(), we'll want to do it anyways.
+					
+					
+					//david
 					willGC = ((System.currentTimeMillis() - lastV8Idle) > MAX_V8_IDLE_INTERVAL);
+					Log.d(TAG, "-------------------------> !willGC Log by david. avoid gc this time", Log.DEBUG_MODE);
 				}
 				if (willGC) {
+					Log.d(TAG, "-------------------------> willGC Log by david", Log.DEBUG_MODE);
 					boolean gcWantsMore = !nativeIdle();
 					lastV8Idle = System.currentTimeMillis();
 					if (gcWantsMore) {
+						Log.d(TAG, "-------------------------> gcWantsMore Log by david", Log.DEBUG_MODE);
 						shouldGC.set(true);
 					}
 				}

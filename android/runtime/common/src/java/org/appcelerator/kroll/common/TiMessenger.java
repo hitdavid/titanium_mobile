@@ -52,10 +52,18 @@ public class TiMessenger implements Handler.Callback
 	protected static ThreadLocal<TiMessenger> threadLocalMessenger = new ThreadLocal<TiMessenger>() {
 		protected TiMessenger initialValue()
 		{
-			if (Looper.myLooper() == null) {
+//			if (Looper.myLooper() == null) {
+//				synchronized (threadLocalMessenger) {
+//					if (Looper.myLooper() == null) {
+//						Looper.prepare();
+//					}
+//				}
+//			}
+			//david
+			if (Looper.getMainLooper() == null) {
 				synchronized (threadLocalMessenger) {
-					if (Looper.myLooper() == null) {
-						Looper.prepare();
+					if (Looper.getMainLooper() == null) {
+						Looper.prepareMainLooper();
 					}
 				}
 			}

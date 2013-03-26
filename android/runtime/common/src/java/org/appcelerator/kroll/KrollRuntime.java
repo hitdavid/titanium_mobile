@@ -115,7 +115,7 @@ public abstract class KrollRuntime implements Handler.Callback
 				notifyAll();
 			}
 
-			this.mainThread = Looper.getMainLooper().getThread();
+			this.mainThread = looper.getThread();
 			
 			// initialize the runtime instance
 			runtime.threadId = looper.getThread().getId();
@@ -136,13 +136,16 @@ public abstract class KrollRuntime implements Handler.Callback
 
 	public static void init(Context context, KrollRuntime runtime)
 	{
-		Log.d(TAG, "=== Kroll Runtime init begin");
+//		Log.d(TAG, "=== Kroll Runtime init begin", Log.DEBUG_MODE);
+//		Log.d(TAG, "=== context is"+ context.toString(), Log.DEBUG_MODE);
+//		Log.d(TAG, "=== runtime is"+ runtime.toString(), Log.DEBUG_MODE);
+//		Log.d(TAG, "=== runtimeState is"+ runtimeState, Log.DEBUG_MODE);
 		// Initialized the runtime if it isn't already initialized
 		
 		//david 
 		//2013-3-19
-		//if (runtimeState != State.INITIALIZED) {
-			Log.d(TAG, "=== runtimeState != State.INITIALIZED");
+		if (runtimeState != State.INITIALIZED) {
+//			Log.d(TAG, "=== runtimeState != State.INITIALIZED", Log.DEBUG_MODE);
 			
 			int stackSize = runtime.getThreadStackSize(context);
 			runtime.krollApplication = new WeakReference<KrollApplication>((KrollApplication) context);
@@ -151,10 +154,10 @@ public abstract class KrollRuntime implements Handler.Callback
 
 			instance = runtime; // make sure this is set before the runtime thread is started
 			runtime.thread.run();
-		//}
+		}
 
 		KrollAssetHelper.init(context);
-		Log.d(TAG, "=== Kroll Runtime init end");
+//		Log.d(TAG, "=== Kroll Runtime init end", Log.DEBUG_MODE);
 	}
 
 	public static KrollRuntime getInstance()
@@ -300,7 +303,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	{
 		switch (msg.what) {
 			case MSG_INIT: {
-				Log.d(TAG, "========== handleMessage doInit()");
+//				Log.d(TAG, "========== handleMessage doInit()");
 				doInit();
 				return true;
 			}

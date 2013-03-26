@@ -430,7 +430,7 @@ public abstract class TiUIView
 		Log.i("TiUIView propertyChanged", key);
 		if (key.equals(TiC.PROPERTY_LEFT)) {
 			resetPostAnimationValues();
-			Log.d(TAG, "setting left of view"+ TiConvert.toString(newValue), Log.DEBUG_MODE);
+//			Log.d(TAG, "setting left of view"+ TiConvert.toString(newValue), Log.DEBUG_MODE);
 			if (newValue != null) {
 				layoutParams.optionLeft = TiConvert.toTiDimension(TiConvert.toString(newValue), TiDimension.TYPE_LEFT);
 			} else {
@@ -475,10 +475,10 @@ public abstract class TiUIView
 				Log.w(TAG, "Unsupported property type ("+(newValue.getClass().getSimpleName())+") for key: " + key+". Must be an object/dictionary");
 			}
 		} else if(key.equals(TiC.PROPERTY_FLEX)) {
-			Log.d(TAG, "setting flex begin", Log.DEBUG_MODE);
+//			Log.d(TAG, "setting flex begin", Log.DEBUG_MODE);
 			resetPostAnimationValues();
 			if (newValue != null) {
-				Log.d(TAG, "set flex"+ TiConvert.toString(newValue), Log.DEBUG_MODE);
+//				Log.d(TAG, "set flex"+ TiConvert.toString(newValue), Log.DEBUG_MODE);
 				layoutParams.flex = TiConvert.toTiDimension(TiConvert.toString(newValue),
 						TiDimension.TYPE_FLEX);
 			} else {
@@ -665,7 +665,7 @@ public abstract class TiUIView
 		boolean nativeViewNull = false;
 		if (nativeView == null) {
 			nativeViewNull = true;
-			Log.d(TAG, "Nativeview is null", Log.DEBUG_MODE);
+//			Log.d(TAG, "Nativeview is null", Log.DEBUG_MODE);
 		}
 		if (d.containsKey(TiC.PROPERTY_LAYOUT)) {
 			String layout = TiConvert.toString(d, TiC.PROPERTY_LAYOUT);
@@ -684,11 +684,11 @@ public abstract class TiUIView
 		}
 		
 		if(d.containsKey(TiC.PROPERTY_WIDTH)) {
-			Log.d(TAG, "processProperties ==> WIDTH", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> WIDTH", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String width = TiConvert.toString(d, TiC.PROPERTY_WIDTH);
 
-				Log.d(TAG, "processProperties get width value==> "+width, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get width value==> "+width, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.optionWidth = new TiDimension(width, TiDimension.TYPE_WIDTH);
@@ -697,11 +697,11 @@ public abstract class TiUIView
 		}
 		
 		if(d.containsKey(TiC.PROPERTY_HEIGHT)) {
-			Log.d(TAG, "processProperties ==> HEIGHT", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> HEIGHT", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String height = TiConvert.toString(d, TiC.PROPERTY_HEIGHT);
 
-				Log.d(TAG, "processProperties get height value==> "+ height, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get height value==> "+ height, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.optionHeight = new TiDimension(height, TiDimension.TYPE_HEIGHT);
@@ -710,16 +710,16 @@ public abstract class TiUIView
 		}
 		
 		if(d.containsKey(TiC.PROPERTY_FLEX)) {
-			Log.d(TAG, "processProperties ==> FLEX", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> FLEX", Log.DEBUG_MODE);
 
-			Log.d(TAG, nativeView.getClass().toString(), Log.DEBUG_MODE);			
+//			Log.d(TAG, nativeView.getClass().toString(), Log.DEBUG_MODE);			
 
 //			if (nativeView instanceof TiCompositeLayout) {
-				Log.d(TAG, nativeView.toString(), Log.DEBUG_MODE);
+//				Log.d(TAG, nativeView.toString(), Log.DEBUG_MODE);
 				
 				String flex = TiConvert.toString(d, TiC.PROPERTY_FLEX);
 
-				Log.d("processProperties get flex value==> ", flex, Log.DEBUG_MODE);
+//				Log.d("processProperties get flex value==> ", flex, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.flex = new TiDimension(flex, TiDimension.TYPE_FLEX);
@@ -728,11 +728,11 @@ public abstract class TiUIView
 		}
 		
 		if(d.containsKey(TiC.PROPERTY_LEFT)) {
-			Log.d(TAG, "processProperties ==> LEFT", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> LEFT", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String left = TiConvert.toString(d, TiC.PROPERTY_LEFT);
 
-				Log.d(TAG, "processProperties get left value==> "+ left, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get left value==> "+ left, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.marginLeft = new TiDimension(left, TiDimension.TYPE_LEFT);
@@ -740,11 +740,11 @@ public abstract class TiUIView
 			}
 		}
 		if(d.containsKey(TiC.PROPERTY_RIGHT)) {
-			Log.d(TAG, "processProperties ==> RIGHT", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> RIGHT", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String right = TiConvert.toString(d, TiC.PROPERTY_RIGHT);
 
-				Log.d(TAG, "processProperties get right value==> "+ right, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get right value==> "+ right, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.marginRight = new TiDimension(right, TiDimension.TYPE_RIGHT);
@@ -752,11 +752,11 @@ public abstract class TiUIView
 			}
 		}
 		if(d.containsKey(TiC.PROPERTY_BOTTOM)) {
-			Log.d(TAG, "processProperties ==> BOTTOM", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> BOTTOM", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String bottom = TiConvert.toString(d, TiC.PROPERTY_BOTTOM);
 
-				Log.d(TAG, "processProperties get left value==> "+ bottom, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get left value==> "+ bottom, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.marginBottom = new TiDimension(bottom, TiDimension.TYPE_BOTTOM);
@@ -764,11 +764,11 @@ public abstract class TiUIView
 			}
 		}
 		if(d.containsKey(TiC.PROPERTY_TOP)) {
-			Log.d(TAG, "processProperties ==> TOP", Log.DEBUG_MODE);
+//			Log.d(TAG, "processProperties ==> TOP", Log.DEBUG_MODE);
 			if (nativeView instanceof TiCompositeLayout) {
 				String top = TiConvert.toString(d, TiC.PROPERTY_TOP);
 
-				Log.d(TAG, "processProperties get left value==> "+ top, Log.DEBUG_MODE);
+//				Log.d(TAG, "processProperties get left value==> "+ top, Log.DEBUG_MODE);
 				
 				TiCompositeLayout.LayoutParams lp = (LayoutParams) this.getLayoutParams();
 				lp.marginTop= new TiDimension(top, TiDimension.TYPE_TOP);
@@ -1539,14 +1539,14 @@ public abstract class TiUIView
 
 	private void disableHWAcceleration()
 	{
-		if (borderView == null) {
+		if (nativeView == null) {
 			return;
 		}
-		Log.d(TAG, "Disabling hardware acceleration for instance of " + borderView.getClass().getSimpleName(),
+		Log.d(TAG, "Disabling hardware acceleration for instance of " + nativeView.getClass().getSimpleName(),
 			Log.DEBUG_MODE);
 		if (mSetLayerTypeMethod == null) {
 			try {
-				Class<? extends View> c = borderView.getClass();
+				Class<? extends View> c = nativeView.getClass();
 				mSetLayerTypeMethod = c.getMethod("setLayerType", int.class, Paint.class);
 			} catch (SecurityException e) {
 				Log.e(TAG, "SecurityException trying to get View.setLayerType to disable hardware acceleration.", e,

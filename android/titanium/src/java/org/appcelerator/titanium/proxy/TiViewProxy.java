@@ -670,10 +670,10 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	public void show(@Kroll.argument(optional=true) KrollDict options)
 	{
 		if (TiApplication.isUIThread()) {
-			Log.d(TAG, "show in UIThread!", Log.DEBUG_MODE);
+//			Log.d(TAG, "show in UIThread!", Log.DEBUG_MODE);
 			handleShow(options);
 		} else {
-			Log.d(TAG, "show in UIThread!", Log.DEBUG_MODE);
+//			Log.d(TAG, "show in UIThread!", Log.DEBUG_MODE);
 			getMainHandler().obtainMessage(MSG_SHOW, options).sendToTarget();
 		}
 	}
@@ -681,7 +681,7 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	protected void handleShow(KrollDict options)
 	{
 		if (view != null) {
-			Log.d(TAG, "handleShow view != null", Log.DEBUG_MODE);
+//			Log.d(TAG, "handleShow view != null", Log.DEBUG_MODE);
 			view.show();
 			
 		}
@@ -692,10 +692,10 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	public void hide(@Kroll.argument(optional=true) KrollDict options)
 	{
 		if (TiApplication.isUIThread()) {
-			Log.d(TAG, "hide in UIThread!", Log.DEBUG_MODE);
+//			Log.d(TAG, "hide in UIThread!", Log.DEBUG_MODE);
 			handleHide(options);
 		} else {
-			Log.d(TAG, "hide not in UIThread!", Log.DEBUG_MODE);
+//			Log.d(TAG, "hide not in UIThread!", Log.DEBUG_MODE);
 			getMainHandler().obtainMessage(MSG_HIDE, options).sendToTarget();
 		}
 
@@ -704,7 +704,7 @@ public abstract class TiViewProxy extends KrollProxy implements Handler.Callback
 	protected void handleHide(KrollDict options)
 	{
 		if (view != null) {
-			Log.d(TAG, "handleHide view != null", Log.DEBUG_MODE);
+//			Log.d(TAG, "handleHide view != null", Log.DEBUG_MODE);
 			synchronized(pendingAnimationLock) {
 				if (pendingAnimation != null) {
 					handlePendingAnimation(false);
