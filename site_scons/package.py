@@ -401,7 +401,7 @@ def resolve_npm_deps(dir, version, node_appc_branch):
 		
 		# need to npm install all node dependencies
 		print 'Calling npm from %s' % dir
-		p = subprocess.Popen('npm install', shell=True, cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		p = subprocess.Popen('sudo npm install', shell=True, cwd=dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = p.communicate()
 		if p.returncode != 0:
 			codecs.open(package_json_file, 'w', 'utf-8').write(package_json_original)

@@ -72,7 +72,7 @@ public abstract class KrollRuntime implements Handler.Callback
 	};
 
 	public static final int DONT_INTERCEPT = Integer.MIN_VALUE + 1;
-	public static final int DEFAULT_THREAD_STACK_SIZE = 16 * 1024;
+	public static final int DEFAULT_THREAD_STACK_SIZE = 64 * 1024;
 	public static final String SOURCE_ANONYMOUS = "<anonymous>";
 
 	public static class KrollRuntimeThread// extends Thread
